@@ -30,6 +30,16 @@ public class Button implements View {
         this.button.setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 16));   
     }
 
+    private Button asSecondary() {
+        this.button.setBackground(Theme.Colors.SURFACE);
+        this.button.setForeground(Theme.Colors.PRIMARY);
+        this.button.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.Colors.BORDER, 1),
+            BorderFactory.createEmptyBorder(8, 16, 8, 16)
+        ));
+        return this;
+    }
+
     public Button onClick(Runnable action) {
         this.button.addActionListener(e -> action.run());
         return this;
@@ -55,6 +65,10 @@ public class Button implements View {
 
     public static Button primary(String text) {
         return create(text);
+    }
+
+    public static Button secondary(String text) {
+        return create(text).asSecondary();
     }
 
     @Override

@@ -11,21 +11,20 @@ import com.system.paperflow.presentation.ui.component.Text;
 import com.system.paperflow.presentation.ui.component.TextField;
 import com.system.paperflow.presentation.ui.component.TextField.TextFieldType;
 
-public class LoginScreen implements Screen {
+public class RegisterScreen implements Screen {
 
-    private final Runnable onRegisterClick;
+    private final Runnable onLoginClick;
 
-    public LoginScreen(Runnable onRegisterClick) {
-        this.onRegisterClick = onRegisterClick;
+    public RegisterScreen(Runnable onLoginClick) {
+        this.onLoginClick = onLoginClick;
     }
 
     @Override
     public JComponent build() {
-        TextField emailInput = TextField.create(TextFieldType.TEXT)
-            .fullWidth();
-
-        TextField passwordInput = TextField.create(TextFieldType.PASSWORD)
-            .fullWidth();
+        TextField emailInput = TextField.create(TextFieldType.TEXT).fullWidth();
+        TextField usernameInput = TextField.create(TextFieldType.TEXT).fullWidth();
+        TextField institutionInput = TextField.create(TextFieldType.TEXT).fullWidth();
+        TextField passwordInput = TextField.create(TextFieldType.PASSWORD).fullWidth();
 
         Column form = Column.create()
             .center()
@@ -33,13 +32,15 @@ public class LoginScreen implements Screen {
             .children(
 
                 Text.title("Paper Flow"),
-                Text.subtitle("Entre para continuar"),
+                Text.subtitle("Realize seu registro para continuar"),
 
+                FormField.create("Username", usernameInput),
+                FormField.create("Instituição", institutionInput),
                 FormField.create("E-mail", emailInput),
                 FormField.create("Senha", passwordInput),
 
-                Button.primary("Entrar").fullWidth(),
-                Button.secondary("Criar conta").fullWidth().onClick(onRegisterClick)
+                Button.primary("Registrar").fullWidth(),
+                Button.secondary("Já tenho conta").fullWidth().onClick(onLoginClick)
             );
 
         return Center.create(form).build();
@@ -47,6 +48,6 @@ public class LoginScreen implements Screen {
 
     @Override
     public String withTitle() {
-        return "Paper Flow - Login";
+        return "Paper Flow - Register";
     }
 }
