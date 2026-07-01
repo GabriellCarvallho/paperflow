@@ -3,6 +3,7 @@ package com.system.paperflow.presentation.ui;
 import java.awt.CardLayout;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -10,7 +11,8 @@ import javax.swing.SwingUtilities;
 
 public class ScreenUtils {
 
-    private static final Map<String, Screen> routes = new HashMap<>();
+    private static final Map<String, Supplier<Screen>> routes = new HashMap<>();
+    private static final Map<String, Screen> loadedScreens = new HashMap<>();
 
     private static JFrame frame;
     private static JPanel panel;
@@ -31,36 +33,64 @@ public class ScreenUtils {
 
     private ScreenUtils() {}
 
-    public static void register(String routeName, Screen screen) {
-        SwingUtilities.invokeLater(() -> {
-            routes.put(routeName, screen);
-            panel.add(screen.build(), routeName);
+    public static void register(String routeName, Supplier<Screen> screenFactory) {
+        runOnEventDispatchThread(() -> {
+            routes.put(routeName, screenFactory);
         });
     }
 
     public static void navigateTo(String routeName) {
-        SwingUtilities.invokeLater(() -> {
-            Screen screen = routes.get(routeName);
-            if (screen != null) {
-                frame.setTitle(screen.withTitle());
+        runOnEventDispatchThread(() -> show(routeName));
+    }
 
-                frame.setPreferredSize(screen.withDimension());
+    private static Screen loadScreen(String routeName) {
+        if (loadedScreens.containsKey(routeName)) {
+            return loadedScreens.get(routeName);
+        }
 
-                layout.show(panel, routeName);
+        Supplier<Screen> screenFactory = routes.get(routeName);
 
-                frame.pack();
-                frame.setLocationRelativeTo(null);
-            } else {
-                throw new RuntimeException("Tela não encontrada");
-            }
-        });
+        if (screenFactory == null) {
+            return null;
+        }
+
+        Screen screen = screenFactory.get();
+        loadedScreens.put(routeName, screen);
+        panel.add(screen.build(), routeName);
+
+        return screen;
     }
 
     public static void start(String initialRoute) {
-        SwingUtilities.invokeLater(() -> {
-            navigateTo(initialRoute);
+        runOnEventDispatchThread(() -> {
+            show(initialRoute);
             frame.setVisible(true);
         });
+    }
+
+    private static void show(String routeName) {
+        Screen screen = loadScreen(routeName);
+        if (screen != null) {
+            frame.setTitle(screen.withTitle());
+
+            frame.setPreferredSize(screen.initialSize());
+
+            layout.show(panel, routeName);
+
+            frame.pack();
+            frame.setLocationRelativeTo(null);
+        } else {
+            throw new RuntimeException("Tela não encontrada");
+        }
+    }
+
+    private static void runOnEventDispatchThread(Runnable action) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            action.run();
+            return;
+        }
+
+        SwingUtilities.invokeLater(action);
     }
     
 }

@@ -17,11 +17,12 @@ public class Row implements View {
     private final JPanel panel;
     private View[] childComponents = new View[0];
     private Alignment alignment = Alignment.LEFT;
+    private int gap = 0;
 
     private Row() {
         this.panel = new JPanel();
         this.panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-        this.panel.setBackground(Color.decode("#F8F9FA"));
+        this.panel.setOpaque(false);
     }
 
     public static Row create() {
@@ -33,8 +34,36 @@ public class Row implements View {
         return this;
     }
 
-    public Row modifier(Consumer<JPanel> modifier) {
+    public Row left() {
+        return withAlignment(Alignment.LEFT);
+    }
+
+    public Row center() {
+        return withAlignment(Alignment.CENTER);
+    }
+
+    public Row right() {
+        return withAlignment(Alignment.RIGHT);
+    }
+
+    public Row gap(int gap) {
+        this.gap = gap;
+        return this;
+    }
+
+    public Row unsafeModifier(Consumer<JPanel> modifier) {
         modifier.accept(this.panel);
+        return this;
+    }
+
+    public Row withBackground(Color color) {
+        this.panel.setOpaque(true);
+        this.panel.setBackground(color);
+        return this;
+    }
+
+    public Row transparent() {
+        this.panel.setOpaque(false);
         return this;
     }
 
@@ -51,10 +80,15 @@ public class Row implements View {
             this.panel.add(Box.createHorizontalGlue());
         }
 
-        for (View component : childComponents) {
+        for (int index = 0; index < childComponents.length; index++) {
+            View component = childComponents[index];
             JComponent jComp = component.build();
             jComp.setAlignmentY(Component.CENTER_ALIGNMENT); 
             this.panel.add(jComp);
+
+            if (gap > 0 && index < childComponents.length - 1) {
+                this.panel.add(Spacer.horizontal(gap).build());
+            }
         }
 
         if (alignment == Alignment.CENTER || alignment == Alignment.LEFT) {

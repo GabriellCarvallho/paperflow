@@ -2,25 +2,25 @@ package com.system.paperflow.presentation.ui.component;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 
+import com.system.paperflow.presentation.ui.Theme;
 import com.system.paperflow.presentation.ui.View;
 
 public class Button implements View {
-
-    private static final String DEFAULT_FONT = "Segoe UI";
 
     private final JButton button;
 
     private Button(String text) {
         this.button = new JButton(text);
-        this.button.setFont(new Font(DEFAULT_FONT, Font.BOLD, 14));
+        this.button.setFont(new Font(Theme.FONT_FAMILY, Font.BOLD, 14));
         
-        this.button.setBackground(Color.decode("#3182CE"));
+        this.button.setBackground(Theme.Colors.PRIMARY);
         this.button.setForeground(Color.WHITE);
         
         this.button.setFocusPainted(false);
@@ -35,8 +35,26 @@ public class Button implements View {
         return this;
     }
 
+    public Button fullWidth() {
+        return withWidthPercent(100);
+    }
+
+    public Button withWidthPercent(int percent) {
+        Dimension currentSize = this.button.getPreferredSize();
+        Dimension size = new Dimension(Theme.Layout.widthFromPercent(percent), currentSize.height);
+
+        this.button.setPreferredSize(size);
+        this.button.setMinimumSize(size);
+        this.button.setMaximumSize(size);
+        return this;
+    }
+
     public static Button create(String text) {
         return new Button(text);
+    }
+
+    public static Button primary(String text) {
+        return create(text);
     }
 
     @Override

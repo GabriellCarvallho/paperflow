@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.util.function.Consumer;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -15,19 +16,40 @@ public class Column implements View {
 
     private final JPanel panel;
     private Alignment alignment = Alignment.LEFT;
+    private int gap = 0;
 
     private Column() {
         this.panel = new JPanel();
         this.panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        this.panel.setBackground(Color.decode("#F8F9FA"));
+        this.panel.setOpaque(false);
     }
 
     public static Column create() {
         return new Column();
     }
 
-    public Column modifier(Consumer<JPanel> modifier) {
+    public Column unsafeModifier(Consumer<JPanel> modifier) {
         modifier.accept(this.panel);
+        return this;
+    }
+
+    public Column withBackground(Color color) {
+        this.panel.setOpaque(true);
+        this.panel.setBackground(color);
+        return this;
+    }
+
+    public Column transparent() {
+        this.panel.setOpaque(false);
+        return this;
+    }
+
+    public Column withPadding(int padding) {
+        return withPadding(padding, padding, padding, padding);
+    }
+
+    public Column withPadding(int top, int left, int bottom, int right) {
+        this.panel.setBorder(BorderFactory.createEmptyBorder(top, left, bottom, right));
         return this;
     }
 
@@ -36,8 +58,28 @@ public class Column implements View {
         return this;
     }
 
+    public Column left() {
+        return withAlignment(Alignment.LEFT);
+    }
+
+    public Column center() {
+        return withAlignment(Alignment.CENTER);
+    }
+
+    public Column right() {
+        return withAlignment(Alignment.RIGHT);
+    }
+
+    public Column gap(int gap) {
+        this.gap = gap;
+        return this;
+    }
+
     public Column children(View... components) {
-        for (View component : components) {
+        this.panel.removeAll();
+
+        for (int index = 0; index < components.length; index++) {
+            View component = components[index];
             JComponent jComp = component.build();
             
             switch (alignment) {
@@ -47,6 +89,10 @@ public class Column implements View {
             }
 
             this.panel.add(jComp);
+
+            if (gap > 0 && index < components.length - 1) {
+                this.panel.add(Spacer.vertical(gap).build());
+            }
         }
         return this;
     }

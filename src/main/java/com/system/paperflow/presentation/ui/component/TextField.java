@@ -9,6 +9,7 @@ import javax.swing.JComponent;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+import com.system.paperflow.presentation.ui.Theme;
 import com.system.paperflow.presentation.ui.View;
 
 public class TextField implements View {
@@ -17,25 +18,22 @@ public class TextField implements View {
         TEXT, PASSWORD;
     }
 
-    private static final String DEFAULT_FONT = "Segoe UI";
-    
     private final JTextField textField;
 
     private TextField(JTextField textField) {
         this.textField = textField;
-        this.textField.setFont(new Font(DEFAULT_FONT, Font.PLAIN, 14));
-        this.textField.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        this.textField.setFont(new Font(Theme.FONT_FAMILY, Font.PLAIN, 14));
 
-        this.textField.setBackground(Color.decode("#FFFFFF"));
-        this.textField.setForeground(Color.decode("#1A202C"));
-        this.textField.setCaretColor(Color.decode("#1A202C"));
+        this.textField.setBackground(Theme.Colors.SURFACE);
+        this.textField.setForeground(Theme.Colors.TEXT);
+        this.textField.setCaretColor(Theme.Colors.TEXT);
         
         this.textField.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(Color.decode("#E2E8F0"), 1),
+            BorderFactory.createLineBorder(Theme.Colors.BORDER, 1),
             BorderFactory.createEmptyBorder(6, 8, 6, 8)
         ));
 
-        this.textField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        applyWidthPercent(100);
     }
 
     public TextField withBackground(Color color) {
@@ -48,6 +46,36 @@ public class TextField implements View {
         return this;
     }
 
+    public TextField withColumns(int columns) {
+        this.textField.setColumns(columns);
+        return this;
+    }
+
+    public TextField withWidthPercent(int percent) {
+        applyWidthPercent(percent);
+        return this;
+    }
+
+    public TextField fullWidth() {
+        return withWidthPercent(100);
+    }
+
+    public String text() {
+        return this.textField.getText();
+    }
+
+    public String password() {
+        if (this.textField instanceof JPasswordField passwordField) {
+            return new String(passwordField.getPassword());
+        }
+
+        return this.textField.getText();
+    }
+
+    public void clear() {
+        this.textField.setText("");
+    }
+
     public static TextField create(TextFieldType type) {
         return (type == TextFieldType.PASSWORD) ? new TextField(new JPasswordField()) : new TextField(new JTextField());
     }
@@ -55,5 +83,16 @@ public class TextField implements View {
     @Override
     public JComponent build() {
         return textField;
+    }
+
+    private void applyWidthPercent(int percent) {
+        Dimension size = new Dimension(
+            Theme.Layout.widthFromPercent(percent),
+            Theme.Layout.CONTROL_HEIGHT
+        );
+
+        this.textField.setPreferredSize(size);
+        this.textField.setMinimumSize(size);
+        this.textField.setMaximumSize(size);
     }
 }
