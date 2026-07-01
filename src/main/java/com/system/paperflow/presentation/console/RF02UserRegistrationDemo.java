@@ -29,6 +29,7 @@ public class RF02UserRegistrationDemo {
 
         DefaultCoordinatorDemo.run(userPersistence);
         RF03TopicCompositeDemo.run(userPersistence);
+        RF04CommitteeDemo.run(userPersistence);
 
         RegisterUserUseCase registerUserUseCase = new RegisterUserUseCase(
                 userPersistence,
