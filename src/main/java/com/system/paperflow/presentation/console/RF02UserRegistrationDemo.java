@@ -6,7 +6,7 @@ import com.system.paperflow.application.factory.ResearcherCreator;
 import com.system.paperflow.application.persistence.UserPersistence;
 import com.system.paperflow.application.usecase.user.RegisterUserUseCase;
 import com.system.paperflow.domain.entity.User;
-import com.system.paperflow.infrastructure.sqlite.SQLiteUserAdapter;
+import com.system.paperflow.infrastructure.sqlite.SQLiteUser;
 
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -25,7 +25,7 @@ public class RF02UserRegistrationDemo {
 
         Path databasePath = Path.of("data", "paperflow.db");
 
-        UserPersistence userPersistence = new SQLiteUserAdapter(databasePath);
+        UserPersistence userPersistence = new SQLiteUser(databasePath);
 
         DefaultCoordinatorDemo.run(userPersistence);
         RF03TopicCompositeDemo.run(userPersistence);

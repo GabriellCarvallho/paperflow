@@ -8,7 +8,7 @@ import com.system.paperflow.application.usecase.user.EnsureDefaultCoordinatorUse
 import com.system.paperflow.domain.entity.Topic;
 import com.system.paperflow.domain.entity.TopicComponent;
 import com.system.paperflow.domain.entity.TopicGroup;
-import com.system.paperflow.infrastructure.sqlite.SQLiteTopicAdapter;
+import com.system.paperflow.infrastructure.sqlite.SQLiteTopic;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -25,7 +25,7 @@ public class RF03TopicCompositeDemo {
         System.out.println();
 
         Path databasePath = Path.of("data", "paperflow.db");
-        TopicPersistence topicPersistence = new SQLiteTopicAdapter(databasePath);
+        TopicPersistence topicPersistence = new SQLiteTopic(databasePath);
 
         CreateTopicTreeUseCase createTopicTreeUseCase = new CreateTopicTreeUseCase(
                 topicPersistence,

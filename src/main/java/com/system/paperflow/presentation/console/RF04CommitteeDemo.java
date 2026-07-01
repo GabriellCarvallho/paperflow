@@ -15,7 +15,7 @@ import com.system.paperflow.application.usecase.user.RegisterUserUseCase;
 import com.system.paperflow.domain.entity.CommitteeInvitation;
 import com.system.paperflow.domain.entity.Reviewer;
 import com.system.paperflow.domain.entity.Topic;
-import com.system.paperflow.infrastructure.sqlite.SQLiteCommitteeAdapter;
+import com.system.paperflow.infrastructure.sqlite.SQLiteCommittee;
 
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -35,7 +35,7 @@ public class RF04CommitteeDemo {
         System.out.println();
 
         Path databasePath = Path.of("data", "paperflow.db");
-        CommitteePersistence committeePersistence = new SQLiteCommitteeAdapter(databasePath);
+        CommitteePersistence committeePersistence = new SQLiteCommittee(databasePath);
 
         CommitteeInvitationPublisher publisher = new CommitteeInvitationPublisher();
         CommitteeAuditTrailObserver auditTrailObserver = new CommitteeAuditTrailObserver();
@@ -49,7 +49,6 @@ public class RF04CommitteeDemo {
                 publisher
         );
         AcceptCommitteeInvitationUseCase acceptInvitationUseCase = new AcceptCommitteeInvitationUseCase(
-                userPersistence,
                 committeePersistence,
                 publisher
         );

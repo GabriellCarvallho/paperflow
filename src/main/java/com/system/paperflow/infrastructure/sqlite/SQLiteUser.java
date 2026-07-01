@@ -18,15 +18,15 @@ import java.sql.Statement;
 import java.util.Collections;
 import java.util.Optional;
 
-public class SQLiteUserAdapter implements UserPersistence {
+public class SQLiteUser implements UserPersistence {
 
     private final String databaseUrl;
 
-    public SQLiteUserAdapter(String databasePath) {
+    public SQLiteUser(String databasePath) {
         this(Path.of(databasePath));
     }
 
-    public SQLiteUserAdapter(Path databasePath) {
+    public SQLiteUser(Path databasePath) {
         loadSQLiteDriver();
         createParentDirectoryIfNecessary(databasePath);
         this.databaseUrl = "jdbc:sqlite:" + databasePath.toAbsolutePath().normalize();
