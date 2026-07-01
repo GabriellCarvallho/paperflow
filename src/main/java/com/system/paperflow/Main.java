@@ -1,20 +1,21 @@
 package com.system.paperflow;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import com.system.paperflow.application.builder.EventBuilder;
-import com.system.paperflow.application.service.EventManager;
-import com.system.paperflow.application.dashboard.DashboardService;
 import com.system.paperflow.application.dashboard.DashboardDTO;
+import com.system.paperflow.application.dashboard.DashboardService;
 import com.system.paperflow.application.dashboard.SystemEventPublisher;
+import com.system.paperflow.application.service.EventManager;
 import com.system.paperflow.domain.entity.Event;
 import com.system.paperflow.domain.entity.Paper;
 import com.system.paperflow.domain.entity.Researcher;
 import com.system.paperflow.domain.entity.Topic;
 import com.system.paperflow.domain.state.UnderReviewState;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import com.system.paperflow.presentation.console.RF02UserRegistrationDemo;
 
 public class Main {
 
@@ -33,6 +34,11 @@ public class Main {
         eventManager.startNewEvent(event);
         System.out.println("Event started: " + eventManager.getCurrentEvent().getName());
         System.out.println("Open for submissions: " + event.isOpenForSubmissions());
+        System.out.println();
+
+
+        // ===== RF02 - Cadastro de usuários (Factory Method + Adapter) =====
+        RF02UserRegistrationDemo.run();
         System.out.println();
 
         // ===== RF05 - Submissão e ciclo de vida (State) =====

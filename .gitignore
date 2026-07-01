@@ -7,3 +7,9 @@ target/
 .settings/
 .DS_Store
 Thumbs.db
+*.class
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+data/
