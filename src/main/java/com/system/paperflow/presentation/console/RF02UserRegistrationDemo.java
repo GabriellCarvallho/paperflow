@@ -28,6 +28,7 @@ public class RF02UserRegistrationDemo {
         UserPersistence userPersistence = new SQLiteUserAdapter(databasePath);
 
         DefaultCoordinatorDemo.run(userPersistence);
+        RF03TopicCompositeDemo.run(userPersistence);
 
         RegisterUserUseCase registerUserUseCase = new RegisterUserUseCase(
                 userPersistence,
