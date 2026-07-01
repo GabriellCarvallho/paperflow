@@ -11,6 +11,8 @@ public class Event {
     private final LocalDate submissionDeadline;
     private boolean openForSubmissions;
 
+    //
+
     public Event(String name, String city, LocalDate startDate, LocalDate endDate,
                  LocalDate submissionDeadline) {
         this.name = name;

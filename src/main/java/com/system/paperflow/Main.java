@@ -5,81 +5,81 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.system.paperflow.application.builder.EventBuilder;
-import com.system.paperflow.application.dashboard.DashboardDTO;
-import com.system.paperflow.application.dashboard.DashboardService;
-import com.system.paperflow.application.dashboard.SystemEventPublisher;
-import com.system.paperflow.application.service.EventManager;
+import com.system.paperflow.application.filter.PaperFilter;
+import com.system.paperflow.application.filter.StatusFilter;
+import com.system.paperflow.application.filter.TopicFilter;
+import com.system.paperflow.application.usecase.dashboard.DashboardUseCase;
+import com.system.paperflow.application.usecase.event.StartEventUseCase;
+import com.system.paperflow.application.usecase.filter.FilterPapersUseCase;
+import com.system.paperflow.domain.dashboard.DashboardData;
 import com.system.paperflow.domain.entity.Event;
 import com.system.paperflow.domain.entity.Paper;
 import com.system.paperflow.domain.entity.Researcher;
 import com.system.paperflow.domain.entity.Topic;
 import com.system.paperflow.domain.state.UnderReviewState;
-import com.system.paperflow.presentation.console.RF02UserRegistrationDemo;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        // ===== RF01 - Start do evento (Builder) =====
-        EventManager eventManager = new EventManager();
+        // ===== RF01 - Start do evento (Use Case) =====
+        StartEventUseCase startEvent = new StartEventUseCase();
+        Event event = startEvent.execute(
+                "SBSI 2026", "Vitoria - ES",
+                LocalDate.of(2026, 5, 25),
+                LocalDate.of(2026, 5, 28),
+                LocalDate.of(2026, 12, 31));
 
-        Event event = new EventBuilder()
-                .withName("SBSI 2026")
-                .withCity("Vitória - ES")
-                .withPeriod(LocalDate.of(2026, 5, 25), LocalDate.of(2026, 5, 28))
-                .withSubmissionDeadline(LocalDate.of(2026, 12, 31))
-                .build();
-
-        eventManager.startNewEvent(event);
-        System.out.println("Event started: " + eventManager.getCurrentEvent().getName());
+        System.out.println("Event started: " + event.getName());
         System.out.println("Open for submissions: " + event.isOpenForSubmissions());
         System.out.println();
 
-
-        // ===== RF02 - Cadastro de usuários (Factory Method + Adapter) =====
-        RF02UserRegistrationDemo.run();
-        System.out.println();
-
-        // ===== RF05 - Submissão e ciclo de vida (State) =====
+        // ===== RF05 - Submissao (State) =====
         Researcher author = new Researcher("Ana", "ana@ufpb.br", "1234", "UFPB");
+        Topic aiTopic = new Topic("IA", "Inteligencia Artificial");
 
-        Paper paper = new Paper(
-                "P001",
-                "Design Patterns aplicados em sistemas de saúde",
-                "Um estudo sobre padrões de projeto.",
-                author,
-                new ArrayList<>(),
-                Set.of(new Topic("IA", "Inteligência Artificial")),
-                event
-        );
+        Paper paper = new Paper("P001", "Design Patterns in Health Systems",
+                "A study on design patterns.", author,
+                new ArrayList<>(), Set.of(aiTopic), event);
 
         System.out.println("Paper submitted: " + paper.getTitle());
-        System.out.println("Status: " + paper.getStatus());   // Submitted
+        System.out.println("Status: " + paper.getStatus());
 
-        paper.advanceState();                                  // → Under Review
+        paper.advanceState();
         System.out.println("Status: " + paper.getStatus());
 
         UnderReviewState reviewState = (UnderReviewState) paper.getState();
-        reviewState.accept(paper);                             // → Accepted
+        reviewState.accept(paper);
         System.out.println("Status: " + paper.getStatus());
         System.out.println();
 
-        // ===== RF08 - Dashboard (Observer) =====
-        List<Paper> papers = List.of(paper);
+        // ===== RF08 - Dashboard (Use Case + record) =====
+        Paper paper2 = new Paper("P002", "Another AI paper",
+                "summary", author, new ArrayList<>(), Set.of(aiTopic), event);
+
+        List<Paper> papers = List.of(paper, paper2);
         List<Researcher> reviewers = List.of(author);
 
-        DashboardService dashboard = new DashboardService(papers, reviewers);
+        DashboardUseCase dashboardUseCase = new DashboardUseCase();
+        DashboardData data = dashboardUseCase.execute(papers, reviewers);
 
-        SystemEventPublisher publisher = new SystemEventPublisher();
-        publisher.subscribe(dashboard);   // dashboard observa o sistema
-        publisher.notifyObservers();      // dispara atualização
-
-        DashboardDTO data = dashboard.generateDashboard();
         System.out.println("=== Dashboard ===");
-        System.out.println("Submitted: " + data.getTotalSubmitted());
-        System.out.println("Reviewers: " + data.getTotalReviewers());
-        System.out.println("Evaluated: " + data.getTotalEvaluated());
-        System.out.println("Pending: " + data.getTotalPending());
+        System.out.println("Submitted: " + data.totalSubmitted());
+        System.out.println("Reviewers: " + data.totalReviewers());
+        System.out.println("Evaluated: " + data.totalEvaluated());
+        System.out.println("Pending: " + data.totalPending());
+        System.out.println();
+
+        // ===== RF10 - Filtro de artigos (Chain of Responsibility) =====
+        PaperFilter chain = new TopicFilter(aiTopic);
+        chain.linkWith(new StatusFilter("Submitted"));
+
+        FilterPapersUseCase filterUseCase = new FilterPapersUseCase();
+        List<Paper> filtered = filterUseCase.execute(papers, chain);
+
+        System.out.println("=== Filter (Topic=IA + Status=Submitted) ===");
+        for (Paper p : filtered) {
+            System.out.println("- " + p.getTitle() + " [" + p.getStatus() + "]");
+        }
     }
 }
