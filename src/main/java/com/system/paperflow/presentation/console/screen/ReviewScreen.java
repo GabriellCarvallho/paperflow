@@ -1,5 +1,6 @@
 package com.system.paperflow.presentation.console.screen;
 
+import com.system.paperflow.application.command.CommandExecutor;
 import com.system.paperflow.application.event.EventManager;
 import com.system.paperflow.application.gateway.ReviewAssignmentGateway;
 import com.system.paperflow.application.usecase.review.ListReviewerAssignmentsUseCase;
@@ -26,10 +27,11 @@ public class ReviewScreen extends BaseConsoleScreen {
             ConsoleRouter router,
             EventManager eventManager,
             ReviewAssignmentGateway assignmentGateway,
+            CommandExecutor commandExecutor,
             ListReviewerAssignmentsUseCase listReviewerAssignmentsUseCase,
             SubmitReviewUseCase submitReviewUseCase
     ) {
-        super(reader, printer, session, router, eventManager, assignmentGateway);
+        super(reader, printer, session, router, eventManager, assignmentGateway, commandExecutor);
         this.listReviewerAssignmentsUseCase = listReviewerAssignmentsUseCase;
         this.submitReviewUseCase = submitReviewUseCase;
     }
@@ -54,7 +56,10 @@ public class ReviewScreen extends BaseConsoleScreen {
     private void myAssignments() {
         Event event = currentEvent();
         printer.section("MINHAS REVISOES");
-        List<ReviewAssignment> assignments = listReviewerAssignmentsUseCase.execute(event, session.currentUser());
+        List<ReviewAssignment> assignments = executeCommand(
+                () -> listReviewerAssignmentsUseCase.execute(event, session.currentUser()),
+                session.currentUser().getEmail() + " CONSULTOU suas revisoes no evento " + event.getId()
+        );
         printAssignments(assignments, true);
     }
 
@@ -77,7 +82,10 @@ public class ReviewScreen extends BaseConsoleScreen {
         String criticism = reader.text("Pontos de critica");
         ReviewVerdict verdict = chooseVerdict();
 
-        submitReviewUseCase.execute(assignment.getPaper().getId(), session.currentUser(), contribution, criticism, verdict);
+        executeCommand(
+                () -> submitReviewUseCase.execute(assignment.getPaper().getId(), session.currentUser(), contribution, criticism, verdict),
+                session.currentUser().getEmail() + " ENVIOU parecer do artigo " + assignment.getPaper().getId()
+        );
         printer.success("Revisao concluida.");
         printer.info("Se todas as revisoes do artigo terminaram, o autor foi notificado por email.");
     }

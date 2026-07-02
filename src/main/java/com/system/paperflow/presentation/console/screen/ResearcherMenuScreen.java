@@ -1,5 +1,6 @@
 package com.system.paperflow.presentation.console.screen;
 
+import com.system.paperflow.application.command.CommandExecutor;
 import com.system.paperflow.application.event.EventManager;
 import com.system.paperflow.application.gateway.ReviewAssignmentGateway;
 import com.system.paperflow.domain.entity.Researcher;
@@ -16,9 +17,10 @@ public class ResearcherMenuScreen extends BaseConsoleScreen {
             ConsoleSession session,
             ConsoleRouter router,
             EventManager eventManager,
-            ReviewAssignmentGateway assignmentGateway
+            ReviewAssignmentGateway assignmentGateway,
+            CommandExecutor commandExecutor
     ) {
-        super(reader, printer, session, router, eventManager, assignmentGateway);
+        super(reader, printer, session, router, eventManager, assignmentGateway, commandExecutor);
     }
 
     @Override
@@ -48,6 +50,8 @@ public class ResearcherMenuScreen extends BaseConsoleScreen {
     }
 
     private void logout() {
+        String email = session.currentUser().getEmail();
+        executeCommand(() -> email, "LOGOUT realizado por " + email);
         session.logout();
         router.navigateTo(ConsoleRouter.PUBLIC_MENU);
     }

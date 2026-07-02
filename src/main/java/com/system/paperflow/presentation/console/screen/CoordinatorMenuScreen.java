@@ -1,5 +1,6 @@
 package com.system.paperflow.presentation.console.screen;
 
+import com.system.paperflow.application.command.CommandExecutor;
 import com.system.paperflow.application.event.EventManager;
 import com.system.paperflow.application.gateway.ReviewAssignmentGateway;
 import com.system.paperflow.application.usecase.distribute.DistributePapersUseCase;
@@ -24,11 +25,12 @@ public class CoordinatorMenuScreen extends BaseConsoleScreen {
             ConsoleRouter router,
             EventManager eventManager,
             ReviewAssignmentGateway assignmentGateway,
+            CommandExecutor commandExecutor,
             StartEventUseCase startEventUseCase,
             DistributePapersUseCase distributePapersUseCase,
             ListEventPapersUseCase listEventPapersUseCase
     ) {
-        super(reader, printer, session, router, eventManager, assignmentGateway);
+        super(reader, printer, session, router, eventManager, assignmentGateway, commandExecutor);
         this.startEventUseCase = startEventUseCase;
         this.distributePapersUseCase = distributePapersUseCase;
         this.listEventPapersUseCase = listEventPapersUseCase;
@@ -69,13 +71,24 @@ public class CoordinatorMenuScreen extends BaseConsoleScreen {
     }
 
     private void startEvent() {
-        startEventUseCase.execute(currentEvent().getId());
+        var event = currentEvent();
+        executeCommand(
+                () -> {
+                    startEventUseCase.execute(event.getId());
+                    return event;
+                },
+                session.currentUser().getEmail() + " INICIOU recebimento de submissoes do evento " + event.getId()
+        );
         printer.success("Evento aberto para submissoes.");
     }
 
     private void distributePapers() {
         printer.section("DISTRIBUICAO AUTOMATICA");
-        var assignments = distributePapersUseCase.execute(currentEvent().getId());
+        var event = currentEvent();
+        var assignments = executeCommand(
+                () -> distributePapersUseCase.execute(event.getId()),
+                session.currentUser().getEmail() + " DISTRIBUIU artigos para revisao no evento " + event.getId()
+        );
         if (assignments.isEmpty()) {
             printer.empty("Nenhum artigo foi distribuido.");
             return;
@@ -86,10 +99,17 @@ public class CoordinatorMenuScreen extends BaseConsoleScreen {
 
     private void listEventPapers() {
         printer.section("ARTIGOS DO EVENTO");
-        printPapers(listEventPapersUseCase.execute(currentEvent()));
+        var event = currentEvent();
+        var papers = executeCommand(
+                () -> listEventPapersUseCase.execute(event),
+                session.currentUser().getEmail() + " CONSULTOU artigos do evento " + event.getId()
+        );
+        printPapers(papers);
     }
 
     private void logout() {
+        String email = session.currentUser().getEmail();
+        executeCommand(() -> email, "LOGOUT realizado por " + email);
         session.logout();
         router.navigateTo(ConsoleRouter.PUBLIC_MENU);
     }

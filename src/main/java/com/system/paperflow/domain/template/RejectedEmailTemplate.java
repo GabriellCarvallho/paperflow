@@ -1,13 +1,22 @@
 package com.system.paperflow.domain.template;
 
 import com.system.paperflow.domain.entity.Paper;
+import com.system.paperflow.domain.entity.ReviewAssignment;
+
+import java.util.List;
 
 public class RejectedEmailTemplate implements EmailTemplate{
 
     private final Paper paper;
+    private final List<ReviewAssignment> assignments;
 
     public RejectedEmailTemplate(Paper paper) {
+        this(paper, List.of());
+    }
+
+    public RejectedEmailTemplate(Paper paper, List<ReviewAssignment> assignments) {
         this.paper = paper;
+        this.assignments = assignments;
     }
 
     @Override
@@ -38,13 +47,19 @@ public class RejectedEmailTemplate implements EmailTemplate{
                         Agradecemos sua submissão.
                     </p>
 
+                    %s
+
+                    %s
+
                 </body>
                 </html>
                 """.formatted(
                 paper.getAuthor().getUsername(),
                 paper.getId(),
                 paper.getTitle(),
-                paper.getEvent().getName() + " - " + paper.getEvent().getCategory()
+                ReviewEmailFormatter.eventLabel(paper.getEvent()),
+                ReviewEmailFormatter.signature(paper.getEvent()),
+                ReviewEmailFormatter.renderReviews(assignments)
         );
     }
 }

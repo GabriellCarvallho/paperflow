@@ -51,7 +51,7 @@ public class SubmitReviewUseCase {
                 paper.markAsRejected();
             }
 
-            publisher.publish(paper);
+            publisher.publish(paper, assignments);
         }
 
         return assignment;

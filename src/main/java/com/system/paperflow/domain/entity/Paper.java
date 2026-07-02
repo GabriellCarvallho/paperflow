@@ -1,5 +1,8 @@
 package com.system.paperflow.domain.entity;
 
+import com.system.paperflow.domain.state.PaperState;
+import com.system.paperflow.domain.state.SubmittedPaperState;
+
 import java.util.*;
 
 public class Paper {
@@ -12,7 +15,7 @@ public class Paper {
     private Set<ThematicArea> areas;
     private Event event;
 
-    private PaperStatus status;
+    private PaperState state;
 
     public Paper(String title, String summary, Researcher author, Event event) {
         this.id = UUID.randomUUID();
@@ -22,19 +25,23 @@ public class Paper {
         this.event = event;
         this.collaborators = new ArrayList<>();
         this.areas = new HashSet<>();
-        this.status = PaperStatus.SUBMITTED;
+        this.state = new SubmittedPaperState();
     }
 
     public void markAsUnderReview() {
-        this.status = PaperStatus.UNDER_REVIEW;
+        state.markAsUnderReview(this);
     }
 
     public void markAsAccepted() {
-        this.status = PaperStatus.ACCEPTED;
+        state.markAsAccepted(this);
     }
 
     public void markAsRejected() {
-        this.status = PaperStatus.REJECTED;
+        state.markAsRejected(this);
+    }
+
+    public void changeState(PaperState state) {
+        this.state = state;
     }
 
     public void addThematicArea(ThematicArea area) {
@@ -51,15 +58,15 @@ public class Paper {
     }
 
     public void markUnderReview() {
-        this.status = PaperStatus.UNDER_REVIEW;
+        markAsUnderReview();
     }
 
     public void accept() {
-        this.status = PaperStatus.ACCEPTED;
+        markAsAccepted();
     }
 
     public void reject() {
-        this.status = PaperStatus.REJECTED;
+        markAsRejected();
     }
 
     public String getTitle() {
@@ -75,7 +82,7 @@ public class Paper {
     }
 
     public PaperStatus getStatus() {
-        return status;
+        return state.status();
     }
 
     public Researcher getAuthor() {

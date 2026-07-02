@@ -1,5 +1,6 @@
 package com.system.paperflow.presentation.console.screen;
 
+import com.system.paperflow.application.command.CommandExecutor;
 import com.system.paperflow.application.event.EventManager;
 import com.system.paperflow.application.gateway.ReviewAssignmentGateway;
 import com.system.paperflow.application.usecase.committee.AddReviewerUseCase;
@@ -23,9 +24,10 @@ public class CommitteeScreen extends BaseConsoleScreen {
             ConsoleRouter router,
             EventManager eventManager,
             ReviewAssignmentGateway assignmentGateway,
+            CommandExecutor commandExecutor,
             AddReviewerUseCase addReviewerUseCase
     ) {
-        super(reader, printer, session, router, eventManager, assignmentGateway);
+        super(reader, printer, session, router, eventManager, assignmentGateway, commandExecutor);
         this.addReviewerUseCase = addReviewerUseCase;
     }
 
@@ -41,7 +43,10 @@ public class CommitteeScreen extends BaseConsoleScreen {
         printThematicAreas(event);
         String email = reader.text("Email do pesquisador cadastrado");
         List<String> areas = reader.csv("Areas de expertise separadas por virgula");
-        Researcher reviewer = addReviewerUseCase.execute(session.currentUser(), email, areas);
+        Researcher reviewer = executeCommand(
+                () -> addReviewerUseCase.execute(session.currentUser(), email, areas),
+                session.currentUser().getEmail() + " ADICIONOU revisor " + email + " ao evento " + event.getId()
+        );
         printer.success("Revisor adicionado ao comite: " + reviewer.getEmail());
     }
 }

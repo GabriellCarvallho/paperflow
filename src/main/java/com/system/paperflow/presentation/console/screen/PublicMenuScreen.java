@@ -1,5 +1,6 @@
 package com.system.paperflow.presentation.console.screen;
 
+import com.system.paperflow.application.command.CommandExecutor;
 import com.system.paperflow.application.usecase.user.LoginUserUseCase;
 import com.system.paperflow.application.usecase.user.RegisterUserUseCase;
 import com.system.paperflow.application.event.EventManager;
@@ -22,10 +23,11 @@ public class PublicMenuScreen extends BaseConsoleScreen {
             ConsoleRouter router,
             EventManager eventManager,
             ReviewAssignmentGateway assignmentGateway,
+            CommandExecutor commandExecutor,
             LoginUserUseCase loginUserUseCase,
             RegisterUserUseCase registerUserUseCase
     ) {
-        super(reader, printer, session, router, eventManager, assignmentGateway);
+        super(reader, printer, session, router, eventManager, assignmentGateway, commandExecutor);
         this.loginUserUseCase = loginUserUseCase;
         this.registerUserUseCase = registerUserUseCase;
     }
@@ -49,7 +51,10 @@ public class PublicMenuScreen extends BaseConsoleScreen {
         printer.section("LOGIN");
         String email = reader.text("Email");
         String password = reader.text("Senha");
-        Researcher researcher = loginUserUseCase.execute(email, password);
+        Researcher researcher = executeCommand(
+                () -> loginUserUseCase.execute(email, password),
+                "LOGIN realizado por " + email
+        );
         session.login(researcher);
         router.navigateTo(researcher.isCoordinator() ? ConsoleRouter.COORDINATOR_MENU : ConsoleRouter.RESEARCHER_MENU);
         printer.success("Login realizado.");
@@ -60,7 +65,10 @@ public class PublicMenuScreen extends BaseConsoleScreen {
         String email = reader.text("Email");
         String password = reader.text("Senha");
         String institution = reader.text("Instituicao");
-        Researcher researcher = registerUserUseCase.execute(email, password, institution);
+        Researcher researcher = executeCommand(
+                () -> registerUserUseCase.execute(email, password, institution),
+                "CADASTRO de pesquisador realizado para " + email
+        );
         printer.success("Pesquisador cadastrado: " + researcher.getEmail());
     }
 }

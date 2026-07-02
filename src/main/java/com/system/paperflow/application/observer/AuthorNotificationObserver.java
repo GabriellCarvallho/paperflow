@@ -1,26 +1,30 @@
 package com.system.paperflow.application.observer;
 
+import com.system.paperflow.application.dto.AuthorNotificationData;
+import com.system.paperflow.application.factory.EmailTemplateFactory;
 import com.system.paperflow.application.gateway.EmailGateway;
 import com.system.paperflow.domain.entity.EmailMessage;
 import com.system.paperflow.domain.entity.Paper;
 import com.system.paperflow.domain.entity.PaperStatus;
-import com.system.paperflow.domain.template.AcceptedEmailTemplate;
+import com.system.paperflow.domain.entity.ReviewAssignment;
 import com.system.paperflow.domain.template.EmailTemplate;
-import com.system.paperflow.domain.template.RejectedEmailTemplate;
+
+import java.util.List;
 
 public class AuthorNotificationObserver implements PaperReviewObserver {
 
     private final EmailGateway emailGateway;
+    private final EmailTemplateFactory emailTemplateFactory;
 
-    public AuthorNotificationObserver(EmailGateway emailGateway) {
+    public AuthorNotificationObserver(EmailGateway emailGateway, EmailTemplateFactory emailTemplateFactory) {
         this.emailGateway = emailGateway;
+        this.emailTemplateFactory = emailTemplateFactory;
     }
 
     @Override
-    public void update(Paper paper) {
+    public void update(Paper paper, List<ReviewAssignment> assignments) {
 
-        EmailTemplate template = paper.getStatus() == PaperStatus.ACCEPTED
-                ? new AcceptedEmailTemplate(paper) : new RejectedEmailTemplate(paper);
+        EmailTemplate template = emailTemplateFactory.create(new AuthorNotificationData(paper, assignments));
 
         String subject = paper.getStatus() == PaperStatus.ACCEPTED ? "Artigo aceito - " + paper.getTitle()
                 : "Resultado da submissão - " + paper.getTitle();

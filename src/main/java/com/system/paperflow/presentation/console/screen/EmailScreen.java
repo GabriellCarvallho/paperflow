@@ -1,5 +1,6 @@
 package com.system.paperflow.presentation.console.screen;
 
+import com.system.paperflow.application.command.CommandExecutor;
 import com.system.paperflow.application.event.EventManager;
 import com.system.paperflow.application.gateway.EmailGateway;
 import com.system.paperflow.application.gateway.ReviewAssignmentGateway;
@@ -22,9 +23,10 @@ public class EmailScreen extends BaseConsoleScreen {
             ConsoleRouter router,
             EventManager eventManager,
             ReviewAssignmentGateway assignmentGateway,
+            CommandExecutor commandExecutor,
             EmailGateway emailGateway
     ) {
-        super(reader, printer, session, router, eventManager, assignmentGateway);
+        super(reader, printer, session, router, eventManager, assignmentGateway, commandExecutor);
         this.emailGateway = emailGateway;
     }
 
@@ -36,7 +38,10 @@ public class EmailScreen extends BaseConsoleScreen {
 
     private void showEmails() {
         printer.section("EMAILS REGISTRADOS");
-        List<EmailMessage> messages = emailGateway.sentMessages();
+        List<EmailMessage> messages = executeCommand(
+                emailGateway::sentMessages,
+                session.currentUser().getEmail() + " CONSULTOU emails registrados"
+        );
         if (messages.isEmpty()) {
             printer.empty("Nenhum email enviado.");
             return;

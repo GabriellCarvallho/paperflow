@@ -1,5 +1,6 @@
 package com.system.paperflow.presentation.console.screen;
 
+import com.system.paperflow.application.command.CommandExecutor;
 import com.system.paperflow.application.event.EventManager;
 import com.system.paperflow.application.gateway.ReviewAssignmentGateway;
 import com.system.paperflow.application.usecase.paper.ListAuthorPapersUseCase;
@@ -25,10 +26,11 @@ public class PaperScreen extends BaseConsoleScreen {
             ConsoleRouter router,
             EventManager eventManager,
             ReviewAssignmentGateway assignmentGateway,
+            CommandExecutor commandExecutor,
             SubmitPaperUseCase submitPaperUseCase,
             ListAuthorPapersUseCase listAuthorPapersUseCase
     ) {
-        super(reader, printer, session, router, eventManager, assignmentGateway);
+        super(reader, printer, session, router, eventManager, assignmentGateway, commandExecutor);
         this.submitPaperUseCase = submitPaperUseCase;
         this.listAuthorPapersUseCase = listAuthorPapersUseCase;
     }
@@ -59,7 +61,10 @@ public class PaperScreen extends BaseConsoleScreen {
         List<String> areas = reader.csv("Areas do artigo separadas por virgula");
         List<String> collaborators = reader.csv("Emails dos coautores separados por virgula");
 
-        Paper paper = submitPaperUseCase.execute(session.currentUser(), event.getId(), title, summary, areas, collaborators);
+        Paper paper = executeCommand(
+                () -> submitPaperUseCase.execute(session.currentUser(), event.getId(), title, summary, areas, collaborators),
+                session.currentUser().getEmail() + " SUBMETEU artigo \"" + title + "\" no evento " + event.getId()
+        );
         printer.success("Artigo submetido.");
         printer.info("ID: " + paper.getId());
         printer.info("Status: " + paper.getStatus());
@@ -67,7 +72,10 @@ public class PaperScreen extends BaseConsoleScreen {
 
     private void myPapers() {
         printer.section("MEUS ARTIGOS");
-        List<Paper> papers = listAuthorPapersUseCase.execute(session.currentUser().getEmail());
+        List<Paper> papers = executeCommand(
+                () -> listAuthorPapersUseCase.execute(session.currentUser().getEmail()),
+                session.currentUser().getEmail() + " CONSULTOU seus artigos"
+        );
         printPapers(papers);
         for (Paper paper : papers) {
             if (hasFinalDecision(paper)) {

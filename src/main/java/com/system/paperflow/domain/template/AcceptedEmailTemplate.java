@@ -1,14 +1,22 @@
 package com.system.paperflow.domain.template;
 
 import com.system.paperflow.domain.entity.Paper;
-import com.system.paperflow.domain.entity.Review;
+import com.system.paperflow.domain.entity.ReviewAssignment;
+
+import java.util.List;
 
 public class AcceptedEmailTemplate implements EmailTemplate {
 
     private final Paper paper;
+    private final List<ReviewAssignment> assignments;
 
     public AcceptedEmailTemplate(Paper paper) {
+        this(paper, List.of());
+    }
+
+    public AcceptedEmailTemplate(Paper paper, List<ReviewAssignment> assignments) {
         this.paper = paper;
+        this.assignments = assignments;
     }
 
     @Override
@@ -29,13 +37,23 @@ public class AcceptedEmailTemplate implements EmailTemplate {
                         <strong>%s</strong>, foi aceita.
                     </p>
 
+                    <p>
+                        As avaliações estão disponíveis ao final do e-mail.
+                    </p>
+
+                    %s
+
+                    %s
+
                 </body>
                 </html>
                 """.formatted(
                 paper.getAuthor().getUsername(),
                 paper.getId().toString(),
                 paper.getTitle(),
-                paper.getEvent().getName() + " - " + paper.getEvent().getCategory()
+                ReviewEmailFormatter.eventLabel(paper.getEvent()),
+                ReviewEmailFormatter.signature(paper.getEvent()),
+                ReviewEmailFormatter.renderReviews(assignments)
         );
     }
 }

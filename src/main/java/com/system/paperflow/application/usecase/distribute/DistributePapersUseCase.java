@@ -3,6 +3,7 @@ package com.system.paperflow.application.usecase.distribute;
 import com.system.paperflow.application.event.EventManager;
 import com.system.paperflow.application.gateway.PaperGateway;
 import com.system.paperflow.application.gateway.ReviewAssignmentGateway;
+import com.system.paperflow.application.strategy.distribution.PaperDistributionStrategy;
 import com.system.paperflow.domain.entity.Event;
 import com.system.paperflow.domain.entity.Paper;
 import com.system.paperflow.domain.entity.Researcher;
@@ -14,14 +15,31 @@ import java.util.UUID;
 
 public class DistributePapersUseCase {
 
+    public static final int REVIEWERS_PER_PAPER = 2;
+
     private final PaperGateway paperGateway;
     private final EventManager manager;
     private final ReviewAssignmentGateway assignmentGateway;
+    private PaperDistributionStrategy distributionStrategy;
 
-    public DistributePapersUseCase(PaperGateway paperGateway, EventManager manager, ReviewAssignmentGateway assignmentGateway) {
+    public DistributePapersUseCase(
+            PaperGateway paperGateway,
+            EventManager manager,
+            ReviewAssignmentGateway assignmentGateway,
+            PaperDistributionStrategy distributionStrategy
+    ) {
         this.paperGateway = paperGateway;
         this.manager = manager;
         this.assignmentGateway = assignmentGateway;
+        this.distributionStrategy = distributionStrategy;
+    }
+
+    public void setStrategy(PaperDistributionStrategy distributionStrategy) {
+        if (distributionStrategy == null) {
+            throw new IllegalArgumentException("A estrategia de distribuicao nao pode ser nula.");
+        }
+
+        this.distributionStrategy = distributionStrategy;
     }
 
     public List<ReviewAssignment> execute(UUID eventId) {
@@ -46,17 +64,17 @@ public class DistributePapersUseCase {
 
         for (Paper paper : papers) {
 
-            List<Researcher> selectedReviewers = reviewers.stream()
-                    .filter(reviewer -> !hasConflict(paper, reviewer))
+            List<Researcher> availableReviewers = reviewers.stream()
                     .filter(reviewer -> !assignmentGateway.exists(paper.getId(), reviewer.getEmail()))
-                    .sorted((r1, r2) -> Integer.compare(
-                            compatibility(paper, r2),
-                            compatibility(paper, r1)
-                    ))
-                    .limit(2)
                     .toList();
 
-            if (selectedReviewers.size() < 2) {
+            List<Researcher> selectedReviewers = distributionStrategy.selectReviewers(
+                    paper,
+                    availableReviewers,
+                    REVIEWERS_PER_PAPER
+            );
+
+            if (selectedReviewers.size() < REVIEWERS_PER_PAPER) {
                 throw new IllegalStateException(
                         "Não há revisores suficientes para o artigo: " + paper.getTitle()
                 );
@@ -75,18 +93,5 @@ public class DistributePapersUseCase {
         }
 
         return assignments;
-    }
-
-    private boolean hasConflict(Paper paper, Researcher reviewer) {
-
-        if (paper.getAuthor().getEmail().equalsIgnoreCase(reviewer.getEmail())) {
-            return true;
-        }
-
-        return paper.getCollaborators().stream().anyMatch(c -> c.getEmail().equalsIgnoreCase(reviewer.getEmail()));
-    }
-
-    private int compatibility(Paper paper, Researcher reviewer) {
-        return (int) paper.getAreas().stream().filter(reviewer.getAreas()::contains).count();
     }
 }

@@ -1,5 +1,9 @@
 package com.system.paperflow.presentation.console.screen;
 
+import com.system.paperflow.application.command.CommandExecutor;
+import com.system.paperflow.application.command.SimpleAuditableCommand;
+import com.system.paperflow.application.event.EventManager;
+import com.system.paperflow.application.gateway.ReviewAssignmentGateway;
 import com.system.paperflow.domain.entity.Event;
 import com.system.paperflow.domain.entity.EventCategory;
 import com.system.paperflow.domain.entity.Paper;
@@ -7,8 +11,6 @@ import com.system.paperflow.domain.entity.PaperStatus;
 import com.system.paperflow.domain.entity.ReviewAssignment;
 import com.system.paperflow.domain.entity.ReviewVerdict;
 import com.system.paperflow.domain.entity.ThematicArea;
-import com.system.paperflow.application.event.EventManager;
-import com.system.paperflow.application.gateway.ReviewAssignmentGateway;
 import com.system.paperflow.presentation.console.ConsolePrinter;
 import com.system.paperflow.presentation.console.ConsoleReader;
 import com.system.paperflow.presentation.console.ConsoleRouter;
@@ -19,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Supplier;
 
 public abstract class BaseConsoleScreen implements ConsoleScreen {
 
@@ -30,6 +33,7 @@ public abstract class BaseConsoleScreen implements ConsoleScreen {
     protected final ConsoleRouter router;
     protected final EventManager eventManager;
     protected final ReviewAssignmentGateway assignmentGateway;
+    protected final CommandExecutor commandExecutor;
 
     protected BaseConsoleScreen(
             ConsoleReader reader,
@@ -37,7 +41,8 @@ public abstract class BaseConsoleScreen implements ConsoleScreen {
             ConsoleSession session,
             ConsoleRouter router,
             EventManager eventManager,
-            ReviewAssignmentGateway assignmentGateway
+            ReviewAssignmentGateway assignmentGateway,
+            CommandExecutor commandExecutor
     ) {
         this.reader = reader;
         this.printer = printer;
@@ -45,6 +50,7 @@ public abstract class BaseConsoleScreen implements ConsoleScreen {
         this.router = router;
         this.eventManager = eventManager;
         this.assignmentGateway = assignmentGateway;
+        this.commandExecutor = commandExecutor;
     }
 
     protected void runSafely(Runnable action) {
@@ -58,6 +64,10 @@ public abstract class BaseConsoleScreen implements ConsoleScreen {
 
     protected Event currentEvent() {
         return eventManager.getCurrentEvent();
+    }
+
+    protected <T> T executeCommand(Supplier<T> action, String description) {
+        return commandExecutor.execute(new SimpleAuditableCommand<>(action, description));
     }
 
     protected void printEventSummary() {

@@ -1,5 +1,6 @@
 package com.system.paperflow.presentation.console.screen;
 
+import com.system.paperflow.application.command.CommandExecutor;
 import com.system.paperflow.application.event.EventManager;
 import com.system.paperflow.application.gateway.ReviewAssignmentGateway;
 import com.system.paperflow.application.usecase.event.CreateEventUseCase;
@@ -23,9 +24,10 @@ public class EventScreen extends BaseConsoleScreen {
             ConsoleRouter router,
             EventManager eventManager,
             ReviewAssignmentGateway assignmentGateway,
+            CommandExecutor commandExecutor,
             CreateEventUseCase createEventUseCase
     ) {
-        super(reader, printer, session, router, eventManager, assignmentGateway);
+        super(reader, printer, session, router, eventManager, assignmentGateway, commandExecutor);
         this.createEventUseCase = createEventUseCase;
     }
 
@@ -43,7 +45,10 @@ public class EventScreen extends BaseConsoleScreen {
         LocalDate submissionDeadline = reader.date("Prazo final de submissao");
         EventCategory category = chooseCategory();
 
-        Event event = createEventUseCase.execute(name, city, endDate, submissionDeadline, category);
+        Event event = executeCommand(
+                () -> createEventUseCase.execute(name, city, endDate, submissionDeadline, category),
+                session.currentUser().getEmail() + " CRIOU evento \"" + name + "\""
+        );
         printer.success("Evento criado: " + event.getName());
         printer.info("ID: " + event.getId());
     }

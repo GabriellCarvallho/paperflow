@@ -1,22 +1,22 @@
 package com.system.paperflow.presentation.console;
 
-import com.system.paperflow.application.usecase.user.EnsureDefaultCoordinatorUseCase;
+import com.system.paperflow.application.usecase.user.SeedMockDataUseCase;
 
 public class ConsoleApp {
 
     private final ConsolePrinter printer;
     private final ConsoleSession session;
     private final ConsoleRouter router;
-    private final EnsureDefaultCoordinatorUseCase ensureDefaultCoordinatorUseCase;
+    private final SeedMockDataUseCase seedMockDataUseCase;
 
     public ConsoleApp(
             ConsolePrinter printer,
             ConsoleSession session,
-            EnsureDefaultCoordinatorUseCase ensureDefaultCoordinatorUseCase
+            SeedMockDataUseCase seedMockDataUseCase
     ) {
         this.printer = printer;
         this.session = session;
-        this.ensureDefaultCoordinatorUseCase = ensureDefaultCoordinatorUseCase;
+        this.seedMockDataUseCase = seedMockDataUseCase;
         this.router = new ConsoleRouter();
     }
 
@@ -25,7 +25,7 @@ public class ConsoleApp {
     }
 
     public void start() {
-        ensureDefaultCoordinatorUseCase.execute();
+        seedMockDataUseCase.execute();
         printer.appHeader();
 
         while (session.isRunning()) {

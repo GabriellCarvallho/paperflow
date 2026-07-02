@@ -1,5 +1,6 @@
 package com.system.paperflow.presentation.console.screen;
 
+import com.system.paperflow.application.command.CommandExecutor;
 import com.system.paperflow.application.event.EventManager;
 import com.system.paperflow.application.gateway.ReviewAssignmentGateway;
 import com.system.paperflow.application.usecase.paper.ListEventPapersUseCase;
@@ -27,10 +28,11 @@ public class DashboardScreen extends BaseConsoleScreen {
             ConsoleRouter router,
             EventManager eventManager,
             ReviewAssignmentGateway assignmentGateway,
+            CommandExecutor commandExecutor,
             ListEventPapersUseCase listEventPapersUseCase,
             ListEventAssignmentsUseCase listEventAssignmentsUseCase
     ) {
-        super(reader, printer, session, router, eventManager, assignmentGateway);
+        super(reader, printer, session, router, eventManager, assignmentGateway, commandExecutor);
         this.listEventPapersUseCase = listEventPapersUseCase;
         this.listEventAssignmentsUseCase = listEventAssignmentsUseCase;
     }
@@ -44,7 +46,10 @@ public class DashboardScreen extends BaseConsoleScreen {
     private void dashboard() {
         Event event = currentEvent();
         printer.section("DASHBOARD");
-        List<Paper> papers = listEventPapersUseCase.execute(event);
+        List<Paper> papers = executeCommand(
+                () -> listEventPapersUseCase.execute(event),
+                session.currentUser().getEmail() + " CONSULTOU dashboard do evento " + event.getId()
+        );
         List<ReviewAssignment> assignments = listEventAssignmentsUseCase.execute(event);
         long evaluatedPapers = papers.stream()
                 .filter(paper -> paper.getStatus() == PaperStatus.ACCEPTED || paper.getStatus() == PaperStatus.REJECTED)
