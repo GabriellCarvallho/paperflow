@@ -6,11 +6,12 @@ import com.system.paperflow.application.factory.ResearcherFactory;
 import com.system.paperflow.application.gateway.PaperGateway;
 import com.system.paperflow.application.gateway.ReviewAssignmentGateway;
 import com.system.paperflow.application.gateway.UserGateway;
+import com.system.paperflow.application.observer.AuthorNotificationObserver;
+import com.system.paperflow.application.observer.publisher.PaperDecisionPublisher;
 import com.system.paperflow.application.usecase.committee.AddReviewerUseCase;
 import com.system.paperflow.application.usecase.distribute.DistributePapersUseCase;
 import com.system.paperflow.application.usecase.event.CreateEventUseCase;
 import com.system.paperflow.application.usecase.event.StartEventUseCase;
-import com.system.paperflow.application.usecase.notification.NotifyAuthorsUseCase;
 import com.system.paperflow.application.usecase.paper.ListAuthorPapersUseCase;
 import com.system.paperflow.application.usecase.paper.ListEventPapersUseCase;
 import com.system.paperflow.application.usecase.paper.SubmitPaperUseCase;
@@ -25,23 +26,12 @@ import com.system.paperflow.infrastructure.memory.InMemoryEmailGateway;
 import com.system.paperflow.infrastructure.memory.InMemoryPaperGateway;
 import com.system.paperflow.infrastructure.memory.InMemoryReviewAssignmentGateway;
 import com.system.paperflow.infrastructure.memory.InMemoryUserGateway;
-import com.system.paperflow.presentation.context.ScreenContext;
-import com.system.paperflow.presentation.screen.AuthorNotificationScreen;
-import com.system.paperflow.presentation.screen.CommitteeManagementScreen;
-import com.system.paperflow.presentation.screen.CreateEventScreen;
-import com.system.paperflow.presentation.screen.DashboardScreen;
-import com.system.paperflow.presentation.screen.DistributionScreen;
-import com.system.paperflow.presentation.screen.EventScreen;
-import com.system.paperflow.presentation.screen.EventsScreen;
-import com.system.paperflow.presentation.screen.LoginScreen;
-import com.system.paperflow.presentation.screen.MyPapersScreen;
-import com.system.paperflow.presentation.screen.RegisterScreen;
-import com.system.paperflow.presentation.screen.RequirementTenScreen;
-import com.system.paperflow.presentation.screen.ReviewerAssignmentsScreen;
-import com.system.paperflow.presentation.screen.SubmitPaperScreen;
-import com.system.paperflow.presentation.screen.SubmitReviewScreen;
-import com.system.paperflow.presentation.screen.TopicManagementScreen;
-import com.system.paperflow.presentation.ui.ScreenUtils;
+import com.system.paperflow.presentation.console.ConsoleApp;
+import com.system.paperflow.presentation.console.ConsolePrinter;
+import com.system.paperflow.presentation.console.ConsoleReader;
+import com.system.paperflow.presentation.console.ConsoleSession;
+
+import java.util.Scanner;
 
 public class Main {
 
@@ -51,41 +41,33 @@ public class Main {
         PaperGateway paperGateway = new InMemoryPaperGateway();
         ReviewAssignmentGateway assignmentGateway = new InMemoryReviewAssignmentGateway();
         InMemoryEmailGateway emailGateway = new InMemoryEmailGateway();
-        ScreenContext screenContext = new ScreenContext();
 
-        new EnsureDefaultCoordinatorUseCase(userGateway, new CoordinatorFactory()).execute();
+        PaperDecisionPublisher publisher = new PaperDecisionPublisher();
+        publisher.addObserver(new AuthorNotificationObserver(emailGateway));
 
-        RegisterUserUseCase registerUserUseCase = new RegisterUserUseCase(userGateway, new ResearcherFactory());
-        LoginUserUseCase loginUserUseCase = new LoginUserUseCase(userGateway);
-        CreateEventUseCase createEventUseCase = new CreateEventUseCase(eventManager);
-        StartEventUseCase startEventUseCase = new StartEventUseCase(eventManager);
-        CreateThematicAreaUseCase createThematicAreaUseCase = new CreateThematicAreaUseCase(eventManager);
-        AddReviewerUseCase addReviewerUseCase = new AddReviewerUseCase(eventManager, userGateway);
-        SubmitPaperUseCase submitPaperUseCase = new SubmitPaperUseCase(eventManager, paperGateway, userGateway);
-        ListAuthorPapersUseCase listAuthorPapersUseCase = new ListAuthorPapersUseCase(paperGateway);
-        ListEventPapersUseCase listEventPapersUseCase = new ListEventPapersUseCase(paperGateway);
-        DistributePapersUseCase distributePapersUseCase = new DistributePapersUseCase(paperGateway, eventManager, assignmentGateway);
-        SubmitReviewUseCase submitReviewUseCase = new SubmitReviewUseCase(assignmentGateway);
-        ListEventAssignmentsUseCase listEventAssignmentsUseCase = new ListEventAssignmentsUseCase(assignmentGateway);
-        ListReviewerAssignmentsUseCase listReviewerAssignmentsUseCase = new ListReviewerAssignmentsUseCase(assignmentGateway);
-        NotifyAuthorsUseCase notifyAuthorsUseCase = new NotifyAuthorsUseCase(eventManager, paperGateway, assignmentGateway, emailGateway);
+        ConsoleApp app = new ConsoleApp(
+                new ConsoleReader(new Scanner(System.in)),
+                new ConsolePrinter(),
+                new ConsoleSession(),
+                eventManager,
+                new RegisterUserUseCase(userGateway, new ResearcherFactory()),
+                new LoginUserUseCase(userGateway),
+                new EnsureDefaultCoordinatorUseCase(userGateway, new CoordinatorFactory()),
+                new CreateEventUseCase(eventManager),
+                new StartEventUseCase(eventManager),
+                new CreateThematicAreaUseCase(eventManager),
+                new AddReviewerUseCase(eventManager, userGateway),
+                new SubmitPaperUseCase(eventManager, paperGateway, userGateway),
+                new ListAuthorPapersUseCase(paperGateway),
+                new ListEventPapersUseCase(paperGateway),
+                new DistributePapersUseCase(paperGateway, eventManager, assignmentGateway),
+                new ListEventAssignmentsUseCase(assignmentGateway),
+                new ListReviewerAssignmentsUseCase(assignmentGateway),
+                new SubmitReviewUseCase(assignmentGateway, publisher),
+                assignmentGateway,
+                emailGateway
+        );
 
-        ScreenUtils.register("login", () -> new LoginScreen(loginUserUseCase, screenContext));
-        ScreenUtils.register("register", () -> new RegisterScreen(registerUserUseCase));
-        ScreenUtils.register("events", () -> new EventsScreen(screenContext, eventManager));
-        ScreenUtils.register("event-create", () -> new CreateEventScreen(createEventUseCase));
-        ScreenUtils.register("event", () -> new EventScreen(screenContext, eventManager, startEventUseCase, listEventPapersUseCase, listEventAssignmentsUseCase));
-        ScreenUtils.register("topics", () -> new TopicManagementScreen(screenContext, eventManager, createThematicAreaUseCase));
-        ScreenUtils.register("committee", () -> new CommitteeManagementScreen(screenContext, eventManager, addReviewerUseCase));
-        ScreenUtils.register("submit-paper", () -> new SubmitPaperScreen(screenContext, eventManager, submitPaperUseCase));
-        ScreenUtils.register("my-papers", () -> new MyPapersScreen(screenContext, listAuthorPapersUseCase, assignmentGateway));
-        ScreenUtils.register("distribution", () -> new DistributionScreen(eventManager, distributePapersUseCase, listEventAssignmentsUseCase));
-        ScreenUtils.register("reviewer-assignments", () -> new ReviewerAssignmentsScreen(screenContext, eventManager, listReviewerAssignmentsUseCase));
-        ScreenUtils.register("submit-review", () -> new SubmitReviewScreen(screenContext, submitReviewUseCase));
-        ScreenUtils.register("dashboard", () -> new DashboardScreen(eventManager, listEventPapersUseCase, listEventAssignmentsUseCase));
-        ScreenUtils.register("notifications", () -> new AuthorNotificationScreen(notifyAuthorsUseCase, emailGateway));
-        ScreenUtils.register("rf10", RequirementTenScreen::new);
-
-        ScreenUtils.start("login");
+        app.start();
     }
 }

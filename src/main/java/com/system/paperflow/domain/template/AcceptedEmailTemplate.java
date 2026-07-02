@@ -35,7 +35,7 @@ public class AcceptedEmailTemplate implements EmailTemplate {
                 paper.getAuthor().getUsername(),
                 paper.getId().toString(),
                 paper.getTitle(),
-                paper.getEvent()
+                paper.getEvent().getName() + " - " + paper.getEvent().getCategory()
         );
     }
 }

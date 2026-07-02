@@ -38,22 +38,13 @@ public class RejectedEmailTemplate implements EmailTemplate{
                         Agradecemos sua submissão.
                     </p>
 
-                    <p>Atenciosamente,</p>
-
-                    <p>
-                        <strong>%s</strong><br/>
-                        Coordenador(a) do Comitê de Programa do %s
-                    </p>
-
-                    %s
-
                 </body>
                 </html>
                 """.formatted(
                 paper.getAuthor().getUsername(),
                 paper.getId(),
                 paper.getTitle(),
-                paper.getEvent().getName()
+                paper.getEvent().getName() + " - " + paper.getEvent().getCategory()
         );
     }
 }
