@@ -2,21 +2,19 @@ package com.system.paperflow.domain.entity;
 
 import java.time.LocalDateTime;
 
-import com.system.paperflow.domain.enums.Verdict;
-
 public class Review {
 
     private final Researcher reviewer;
     private final String contribution;
     private final String criticism;
-    private final Verdict verdict;
+    private final ReviewVerdict reviewVerdict;
     private final LocalDateTime createdAt;
 
-    public Review(Researcher reviewer, String contribution, String criticism, Verdict verdict) {
+    public Review(Researcher reviewer, String contribution, String criticism, ReviewVerdict reviewVerdict) {
         this.reviewer = reviewer;
         this.contribution = contribution;
         this.criticism = criticism;
-        this.verdict = verdict;
+        this.reviewVerdict = reviewVerdict;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -32,8 +30,8 @@ public class Review {
         return criticism;
     }
 
-    public Verdict getVerdict() {
-        return verdict;
+    public ReviewVerdict getVerdict() {
+        return reviewVerdict;
     }
 
     public LocalDateTime getCreatedAt() {

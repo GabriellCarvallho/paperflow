@@ -31,8 +31,12 @@ public class DistributePapersUseCase {
         }
 
         Event event = manager.getCurrentEvent();
-        List<Paper> papers = paperGateway.findByEvent(event);
 
+        if (!event.getId().equals(eventId)) {
+            throw new IllegalArgumentException("Evento informado não é o evento ativo.");
+        }
+
+        List<Paper> papers = paperGateway.findByEvent(event);
         List<Researcher> reviewers = event.getCommittee();
         List<ReviewAssignment> assignments = new ArrayList<>();
 
@@ -42,22 +46,32 @@ public class DistributePapersUseCase {
 
         for (Paper paper : papers) {
 
-            Researcher selected = reviewers.stream()
-                    .filter(r -> !hasConflict(paper, r))
-                    .max((r1, r2) ->
-                            Integer.compare(
-                                    compatibility(paper, r1),
-                                    compatibility(paper, r2)
-                            )
-                    )
-                    .orElseThrow(() ->
-                            new IllegalStateException("Nenhum reviewer disponível")
-                    );
+            List<Researcher> selectedReviewers = reviewers.stream()
+                    .filter(reviewer -> !hasConflict(paper, reviewer))
+                    .filter(reviewer -> !assignmentGateway.exists(paper.getId(), reviewer.getEmail()))
+                    .sorted((r1, r2) -> Integer.compare(
+                            compatibility(paper, r2),
+                            compatibility(paper, r1)
+                    ))
+                    .limit(2)
+                    .toList();
 
-            if (!assignmentGateway.exists(paper.getId(), selected.getEmail())) {
-                ReviewAssignment assignment = assignmentGateway.save(new ReviewAssignment(paper, selected));
+            if (selectedReviewers.size() < 2) {
+                throw new IllegalStateException(
+                        "Não há revisores suficientes para o artigo: " + paper.getTitle()
+                );
+            }
+
+            for (Researcher reviewer : selectedReviewers) {
+                ReviewAssignment assignment = assignmentGateway.save(
+                        new ReviewAssignment(paper, reviewer)
+                );
+
                 assignments.add(assignment);
             }
+
+            paper.markAsUnderReview();
+            paperGateway.save(paper);
         }
 
         return assignments;

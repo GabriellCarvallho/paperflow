@@ -11,6 +11,18 @@ public class ReviewAssignment {
         this.reviewer = reviewer;
     }
 
+    public void finish(Review review) {
+        if (this.review != null) {
+            throw new IllegalStateException("Este artigo já foi avaliado por este revisor.");
+        }
+
+        this.review = review;
+    }
+
+    public boolean isFinished() {
+        return review != null;
+    }
+
     public Paper getPaper() {
         return paper;
     }

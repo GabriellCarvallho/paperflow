@@ -12,6 +12,8 @@ public class Paper {
     private Set<ThematicArea> areas;
     private Event event;
 
+    private PaperStatus status;
+
     public Paper(String title, String summary, Researcher author, Event event) {
         this.id = UUID.randomUUID();
         this.title = title;
@@ -20,6 +22,19 @@ public class Paper {
         this.event = event;
         this.collaborators = new ArrayList<>();
         this.areas = new HashSet<>();
+        this.status = PaperStatus.SUBMITTED;
+    }
+
+    public void markAsUnderReview() {
+        this.status = PaperStatus.UNDER_REVIEW;
+    }
+
+    public void markAsAccepted() {
+        this.status = PaperStatus.ACCEPTED;
+    }
+
+    public void markAsRejected() {
+        this.status = PaperStatus.REJECTED;
     }
 
     public void addThematicArea(ThematicArea area) {
@@ -43,5 +58,21 @@ public class Paper {
 
     public UUID getId() {
         return id;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public PaperStatus getStatus() {
+        return status;
+    }
+
+    public Event getEvent() {
+        return event;
     }
 }

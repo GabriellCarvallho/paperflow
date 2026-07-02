@@ -79,4 +79,8 @@ public class Event {
     public String getName() {
         return name;
     }
+
+    public UUID getId() {
+        return id;
+    }
 }

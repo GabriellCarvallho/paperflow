@@ -1,12 +1,12 @@
 package com.system.paperflow.application.observer.publisher;
 
 import com.system.paperflow.application.observer.PaperReviewObserver;
-import com.system.paperflow.application.observer.event.PaperReviewEvent;
+import com.system.paperflow.domain.entity.Paper;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PaperReviewPublisher {
+public class PaperDecisionPublisher {
 
     private final List<PaperReviewObserver> observers = new ArrayList<>();
 
@@ -14,9 +14,9 @@ public class PaperReviewPublisher {
         observers.add(observer);
     }
 
-    public void publish(PaperReviewEvent event) {
+    public void publish(Paper paper) {
         for (PaperReviewObserver observer : observers) {
-            observer.update(event);
+            observer.update(paper);
         }
     }
 }
