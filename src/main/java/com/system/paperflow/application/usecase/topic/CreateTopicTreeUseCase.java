@@ -30,11 +30,9 @@ public class CreateTopicTreeUseCase {
     }
 
     private void validateCoordinator(String coordinatorEmail) {
-        if (coordinatorEmail == null || coordinatorEmail.trim().isEmpty()) {
-            throw new UnauthorizedTopicManagementException("Informe o email do coordenador responsavel pelo cadastro.");
-        }
+        String normalizedEmail = coordinatorEmail.trim().toLowerCase();
 
-        userPersistence.findByEmail(coordinatorEmail)
+        userPersistence.findByEmail(normalizedEmail)
                 .filter(Coordinator.class::isInstance)
                 .orElseThrow(() -> new UnauthorizedTopicManagementException(
                         "Somente um coordenador cadastrado pode gerenciar areas tematicas."
@@ -42,14 +40,6 @@ public class CreateTopicTreeUseCase {
     }
 
     private void validateTopicTree(TopicComponent topicComponent) {
-        if (topicComponent == null) {
-            throw new InvalidTopicDataException("A area tematica nao pode ser nula.");
-        }
-
-        if (topicComponent.getName() == null || topicComponent.getName().trim().isEmpty()) {
-            throw new InvalidTopicDataException("O nome da area tematica e obrigatorio.");
-        }
-
         if (topicComponent.getKeywords().isEmpty()) {
             throw new InvalidTopicDataException("Um grupo de areas tematicas deve possuir pelo menos uma palavra-chave.");
         }

@@ -1,6 +1,5 @@
 package com.system.paperflow.application.usecase.committee;
 
-import com.system.paperflow.application.exception.InvalidCommitteeInvitationException;
 import com.system.paperflow.application.persistence.CommitteePersistence;
 import com.system.paperflow.domain.entity.CommitteeInvitation;
 
@@ -15,10 +14,6 @@ public class FindPendingCommitteeInvitationByReviewerEmailUseCase {
     }
 
     public Optional<CommitteeInvitation> execute(String reviewerEmail) {
-        if (reviewerEmail == null || reviewerEmail.trim().isEmpty()) {
-            throw new InvalidCommitteeInvitationException("Informe o email do usuario convidado.");
-        }
-
-        return committeePersistence.findPendingInvitationByReviewerEmail(reviewerEmail);
+        return committeePersistence.findPendingInvitationByReviewerEmail(reviewerEmail.trim().toLowerCase());
     }
 }

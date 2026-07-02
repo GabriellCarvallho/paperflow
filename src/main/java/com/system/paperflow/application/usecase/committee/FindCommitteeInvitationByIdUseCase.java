@@ -13,10 +13,6 @@ public class FindCommitteeInvitationByIdUseCase {
     }
 
     public CommitteeInvitation execute(String invitationId) {
-        if (invitationId == null || invitationId.trim().isEmpty()) {
-            throw new CommitteeInvitationNotFoundException("Informe o identificador do convite.");
-        }
-
         return committeePersistence.findInvitationById(invitationId)
                 .orElseThrow(() -> new CommitteeInvitationNotFoundException("Convite nao encontrado."));
     }

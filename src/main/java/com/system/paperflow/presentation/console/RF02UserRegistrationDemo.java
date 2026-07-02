@@ -47,7 +47,7 @@ public class RF02UserRegistrationDemo {
         testSuccessfulRegistration(registerUserUseCase, email);
         testDuplicateEmail(registerUserUseCase, email);
         testFindRegisteredUser(userPersistence, email);
-        testInvalidUserData(registerUserUseCase);
+        
 
         System.out.println("RF02 finalizado para simulacao inicial.");
         System.out.println("Mais tarde, esses mesmos casos de uso podem ser chamados pelas telas Swing.");

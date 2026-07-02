@@ -13,13 +13,11 @@ public class FindUserByEmailUseCase {
     }
 
     public User execute(String email) {
-        if (email == null || email.trim().isEmpty()) {
-            throw new InvalidCommitteeInvitationException("Informe o email do usuario.");
-        }
+        String normalizedEmail = email.trim().toLowerCase();
 
-        return userPersistence.findByEmail(email)
+        return userPersistence.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new InvalidCommitteeInvitationException(
-                        "Usuario nao encontrado no cadastro: " + email
+                        "Usuario nao encontrado no cadastro: " + normalizedEmail
                 ));
     }
 }
