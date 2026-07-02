@@ -11,8 +11,6 @@ public class Event {
     private final LocalDate submissionDeadline;
     private boolean openForSubmissions;
 
-    //
-
     public Event(String name, String city, LocalDate startDate, LocalDate endDate,
                  LocalDate submissionDeadline) {
         this.name = name;
@@ -27,28 +25,17 @@ public class Event {
         return openForSubmissions && !LocalDate.now().isAfter(submissionDeadline);
     }
 
+    public boolean isFinished() {
+        return LocalDate.now().isAfter(endDate);
+    }
+
     public void closeSubmissions() {
         this.openForSubmissions = false;
     }
 
-    public String getName() { 
-        return name; 
-
-    }
-    public String getCity() { 
-        return city; 
-
-    }
-    public LocalDate getStartDate() {
-         return startDate; 
-
-    }
-    public LocalDate getEndDate() { 
-        return endDate; 
-
-    }
-    public LocalDate getSubmissionDeadline() { 
-        return submissionDeadline; 
-
-    }
+    public String getName() { return name; }
+    public String getCity() { return city; }
+    public LocalDate getStartDate() { return startDate; }
+    public LocalDate getEndDate() { return endDate; }
+    public LocalDate getSubmissionDeadline() { return submissionDeadline; }
 }
