@@ -4,7 +4,6 @@ import com.system.paperflow.application.exception.InvalidTopicDataException;
 import com.system.paperflow.application.exception.UnauthorizedTopicManagementException;
 import com.system.paperflow.application.persistence.TopicPersistence;
 import com.system.paperflow.application.persistence.UserPersistence;
-import com.system.paperflow.domain.entity.Coordinator;
 import com.system.paperflow.domain.entity.Topic;
 import com.system.paperflow.domain.entity.TopicComponent;
 
@@ -33,7 +32,7 @@ public class CreateTopicTreeUseCase {
         String normalizedEmail = coordinatorEmail.trim().toLowerCase();
 
         userPersistence.findByEmail(normalizedEmail)
-                .filter(Coordinator.class::isInstance)
+                .filter(researcher -> researcher.isCoordinator())
                 .orElseThrow(() -> new UnauthorizedTopicManagementException(
                         "Somente um coordenador cadastrado pode gerenciar areas tematicas."
                 ));

@@ -1,9 +1,8 @@
 package com.system.paperflow.application.persistence;
 
 import com.system.paperflow.domain.entity.CommitteeInvitation;
-import com.system.paperflow.domain.entity.Reviewer;
+import com.system.paperflow.domain.entity.Researcher;
 import com.system.paperflow.domain.entity.Topic;
-import com.system.paperflow.domain.enums.InvitationStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,9 +18,9 @@ public interface CommitteePersistence {
 
     void updateInvitationStatus(CommitteeInvitation invitation);
 
-    void saveReviewerExpertise(String invitationId, Reviewer reviewer, Set<Topic> expertiseAreas);
+    void saveReviewerExpertise(String invitationId, Researcher reviewer, Set<Topic> expertiseAreas);
 
     List<CommitteeInvitation> findAllInvitations();
 
-    List<Reviewer> findAcceptedReviewers();
+    List<Researcher> findAcceptedReviewers();
 }

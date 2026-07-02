@@ -11,9 +11,7 @@ import com.system.paperflow.application.persistence.CommitteePersistence;
 import com.system.paperflow.application.persistence.UserPersistence;
 import com.system.paperflow.application.usecase.user.FindUserByEmailUseCase;
 import com.system.paperflow.domain.entity.CommitteeInvitation;
-import com.system.paperflow.domain.entity.Coordinator;
 import com.system.paperflow.domain.entity.Researcher;
-import com.system.paperflow.domain.entity.User;
 
 public class InviteReviewerUseCase {
 
@@ -34,14 +32,14 @@ public class InviteReviewerUseCase {
     }
 
     public CommitteeInvitation execute(String coordinatorEmail, String reviewerEmail) {
-        Coordinator coordinator = findCoordinator(coordinatorEmail);
-        User invitedUser = findInvitedResearcher(reviewerEmail);
-        validateNoPendingInvitation(invitedUser.getEmail());
+        Researcher coordinator = findCoordinator(coordinatorEmail);
+        Researcher invitedResearcher = findInvitedResearcher(reviewerEmail);
+        validateNoPendingInvitation(invitedResearcher.getEmail());
 
         CommitteeInvitation invitation = new CommitteeInvitation(
                 UUID.randomUUID().toString(),
                 coordinator,
-                invitedUser
+                invitedResearcher
         );
 
         committeePersistence.saveInvitation(invitation);
@@ -50,28 +48,20 @@ public class InviteReviewerUseCase {
         return invitation;
     }
 
-    private Coordinator findCoordinator(String coordinatorEmail) {
-        User user = findUserByEmailUseCase.execute(coordinatorEmail);
+    private Researcher findCoordinator(String coordinatorEmail) {
+        Researcher researcher = findUserByEmailUseCase.execute(coordinatorEmail);
 
-        if (!(user instanceof Coordinator coordinator)) {
+        if (!researcher.isCoordinator()) {
             throw new UnauthorizedCommitteeManagementException(
                     "Somente um coordenador pode gerenciar convites do comite tecnico."
             );
         }
 
-        return coordinator;
+        return researcher;
     }
 
-    private User findInvitedResearcher(String reviewerEmail) {
-        User user = findUserByEmailUseCase.execute(reviewerEmail);
-
-        if (!(user instanceof Researcher)) {
-            throw new InvalidCommitteeInvitationException(
-                    "Apenas pesquisadores cadastrados podem ser convidados para revisao."
-            );
-        }
-
-        return user;
+    private Researcher findInvitedResearcher(String reviewerEmail) {
+        return findUserByEmailUseCase.execute(reviewerEmail);
     }
 
     private void validateNoPendingInvitation(String reviewerEmail) {

@@ -7,27 +7,27 @@ import com.system.paperflow.domain.enums.InvitationStatus;
 public class CommitteeInvitation {
 
     private final String id;
-    private final Coordinator coordinator;
-    private final User invitedUser;
+    private final Researcher coordinator;
+    private final Researcher invitedResearcher;
     private InvitationStatus status;
     private final LocalDateTime createdAt;
     private LocalDateTime answeredAt;
 
-    public CommitteeInvitation(String id, Coordinator coordinator, User invitedUser) {
-        this(id, coordinator, invitedUser, InvitationStatus.PENDING, LocalDateTime.now(), null);
+    public CommitteeInvitation(String id, Researcher coordinator, Researcher invitedResearcher) {
+        this(id, coordinator, invitedResearcher, InvitationStatus.PENDING, LocalDateTime.now(), null);
     }
 
     public CommitteeInvitation(
             String id,
-            Coordinator coordinator,
-            User invitedUser,
+            Researcher coordinator,
+            Researcher invitedResearcher,
             InvitationStatus status,
             LocalDateTime createdAt,
             LocalDateTime answeredAt
     ) {
-        this.id = validateText(id, "identificador do convite");
-        this.coordinator = validateCoordinator(coordinator);
-        this.invitedUser = validateInvitedUser(invitedUser);
+        this.id = id;
+        this.coordinator = coordinator;
+        this.invitedResearcher = invitedResearcher;
         this.status = status == null ? InvitationStatus.PENDING : status;
         this.createdAt = createdAt == null ? LocalDateTime.now() : createdAt;
         this.answeredAt = answeredAt;
@@ -37,12 +37,12 @@ public class CommitteeInvitation {
         return id;
     }
 
-    public Coordinator getCoordinator() {
+    public Researcher getCoordinator() {
         return coordinator;
     }
 
-    public User getInvitedUser() {
-        return invitedUser;
+    public Researcher getInvitedResearcher() {
+        return invitedResearcher;
     }
 
     public String getCoordinatorEmail() {
@@ -50,7 +50,7 @@ public class CommitteeInvitation {
     }
 
     public String getReviewerEmail() {
-        return invitedUser.getEmail();
+        return invitedResearcher.getEmail();
     }
 
     public InvitationStatus getStatus() {
@@ -82,17 +82,17 @@ public class CommitteeInvitation {
     }
 
     public void accept() {
-        acceptBy(invitedUser.getEmail());
+        acceptBy(invitedResearcher.getEmail());
     }
 
     public void reject() {
-        rejectBy(invitedUser.getEmail());
+        rejectBy(invitedResearcher.getEmail());
     }
 
     public void ensureCanBeAnsweredBy(String reviewerEmail, String action) {
-        String normalizedReviewerEmail = validateEmail(reviewerEmail, "email do usuario que responde ao convite");
+        String normalizedReviewerEmail = reviewerEmail.trim().toLowerCase();
 
-        if (!invitedUser.getEmail().equalsIgnoreCase(normalizedReviewerEmail)) {
+        if (!invitedResearcher.getEmail().equalsIgnoreCase(normalizedReviewerEmail)) {
             throw new IllegalArgumentException("Este convite pertence a outro usuario.");
         }
 
@@ -101,39 +101,5 @@ public class CommitteeInvitation {
                     "O convite nao pode ser " + action + " porque seu status atual e " + status + "."
             );
         }
-    }
-
-    private Coordinator validateCoordinator(Coordinator coordinator) {
-        if (coordinator == null) {
-            throw new IllegalArgumentException("O convite precisa estar associado a um coordenador.");
-        }
-
-        return coordinator;
-    }
-
-    private User validateInvitedUser(User invitedUser) {
-        if (invitedUser == null) {
-            throw new IllegalArgumentException("O convite precisa estar associado a um usuario convidado.");
-        }
-
-        return invitedUser;
-    }
-
-    private String validateText(String value, String fieldName) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("O campo " + fieldName + " e obrigatorio.");
-        }
-
-        return value.trim();
-    }
-
-    private String validateEmail(String value, String fieldName) {
-        String email = validateText(value, fieldName).toLowerCase();
-
-        if (!email.contains("@")) {
-            throw new IllegalArgumentException("O campo " + fieldName + " deve conter um email valido.");
-        }
-
-        return email;
     }
 }

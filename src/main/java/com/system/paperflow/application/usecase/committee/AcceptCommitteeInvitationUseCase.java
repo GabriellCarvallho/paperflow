@@ -7,9 +7,8 @@ import com.system.paperflow.application.observer.committee.CommitteeInvitationEv
 import com.system.paperflow.application.observer.committee.CommitteeInvitationPublisher;
 import com.system.paperflow.application.persistence.CommitteePersistence;
 import com.system.paperflow.domain.entity.CommitteeInvitation;
-import com.system.paperflow.domain.entity.Reviewer;
+import com.system.paperflow.domain.entity.Researcher;
 import com.system.paperflow.domain.entity.Topic;
-import com.system.paperflow.domain.entity.User;
 
 import java.util.Set;
 
@@ -30,17 +29,13 @@ public class AcceptCommitteeInvitationUseCase {
         this.reviewerCreator = new ReviewerCreator();
     }
 
-    public Reviewer execute(String invitationId, String reviewerEmail, Set<Topic> expertiseAreas) {
+    public Researcher execute(String invitationId, String reviewerEmail, Set<Topic> expertiseAreas) {
         CommitteeInvitation invitation = findInvitationByIdUseCase.execute(invitationId);
 
         validateExpertiseAreas(expertiseAreas);
         invitation.acceptBy(reviewerEmail);
 
-        User invitedUser = invitation.getInvitedUser();
-        Reviewer reviewer = reviewerCreator.createFromUser(
-                invitation.getInvitedUser(),
-                expertiseAreas
-        );
+        Researcher reviewer = reviewerCreator.assignReviewerProfile(invitation.getInvitedResearcher(), expertiseAreas);
 
         committeePersistence.updateInvitationStatus(invitation);
         committeePersistence.saveReviewerExpertise(invitation.getId(), reviewer, expertiseAreas);

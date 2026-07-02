@@ -1,7 +1,7 @@
 package com.system.paperflow.application.usecase.committee;
 
 import com.system.paperflow.application.persistence.CommitteePersistence;
-import com.system.paperflow.domain.entity.Reviewer;
+import com.system.paperflow.domain.entity.Researcher;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ public class ListTechnicalCommitteeUseCase {
         this.committeePersistence = committeePersistence;
     }
 
-    public List<Reviewer> execute() {
+    public List<Researcher> execute() {
         return committeePersistence.findAcceptedReviewers();
     }
 }

@@ -2,7 +2,7 @@ package com.system.paperflow.application.usecase.user;
 
 import com.system.paperflow.application.exception.InvalidCommitteeInvitationException;
 import com.system.paperflow.application.persistence.UserPersistence;
-import com.system.paperflow.domain.entity.User;
+import com.system.paperflow.domain.entity.Researcher;
 
 public class FindUserByEmailUseCase {
 
@@ -12,7 +12,7 @@ public class FindUserByEmailUseCase {
         this.userPersistence = userPersistence;
     }
 
-    public User execute(String email) {
+    public Researcher execute(String email) {
         String normalizedEmail = email.trim().toLowerCase();
 
         return userPersistence.findByEmail(normalizedEmail)

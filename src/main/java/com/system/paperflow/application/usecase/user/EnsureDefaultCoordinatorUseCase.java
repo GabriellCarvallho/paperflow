@@ -3,8 +3,7 @@ package com.system.paperflow.application.usecase.user;
 import com.system.paperflow.application.exception.InvalidUserDataException;
 import com.system.paperflow.application.factory.CoordinatorCreator;
 import com.system.paperflow.application.persistence.UserPersistence;
-import com.system.paperflow.domain.entity.Coordinator;
-import com.system.paperflow.domain.entity.User;
+import com.system.paperflow.domain.entity.Researcher;
 
 import java.util.Optional;
 
@@ -26,22 +25,22 @@ public class EnsureDefaultCoordinatorUseCase {
         this.coordinatorCreator = coordinatorCreator;
     }
 
-    public User execute() {
-        Optional<User> existingUser = userPersistence.findByEmail(DEFAULT_EMAIL);
+    public Researcher execute() {
+        Optional<Researcher> existingUser = userPersistence.findByEmail(DEFAULT_EMAIL);
 
         if (existingUser.isPresent()) {
-            User user = existingUser.get();
+            Researcher researcher = existingUser.get();
 
-            if (!(user instanceof Coordinator)) {
+            if (!researcher.isCoordinator()) {
                 throw new InvalidUserDataException(
                         "O email do coordenador padrao ja esta cadastrado, mas nao pertence a um coordenador."
                 );
             }
 
-            return user;
+            return researcher;
         }
 
-        User coordinator = coordinatorCreator.create(
+        Researcher coordinator = coordinatorCreator.create(
                 DEFAULT_USERNAME,
                 DEFAULT_EMAIL,
                 DEFAULT_PASSWORD,

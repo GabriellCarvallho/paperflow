@@ -1,21 +1,21 @@
 package com.system.paperflow.application.usecase.user;
 
 import com.system.paperflow.application.exception.UserAlreadyExistsException;
-import com.system.paperflow.application.factory.UserCreator;
+import com.system.paperflow.application.factory.ResearcherCreator;
 import com.system.paperflow.application.persistence.UserPersistence;
-import com.system.paperflow.domain.entity.User;
+import com.system.paperflow.domain.entity.Researcher;
 
 public class RegisterUserUseCase {
 
     private final UserPersistence userPersistence;
-    private final UserCreator userCreator;
+    private final ResearcherCreator researcherCreator;
 
-    public RegisterUserUseCase(UserPersistence userPersistence, UserCreator userCreator) {
+    public RegisterUserUseCase(UserPersistence userPersistence, ResearcherCreator researcherCreator) {
         this.userPersistence = userPersistence;
-        this.userCreator = userCreator;
+        this.researcherCreator = researcherCreator;
     }
 
-    public User execute(String email, String password, String institution) {
+    public Researcher execute(String email, String password, String institution) {
         String normalizedEmail = email.trim().toLowerCase();
 
         if (userPersistence.existsByEmail(normalizedEmail)) {
@@ -23,10 +23,10 @@ public class RegisterUserUseCase {
         }
 
         String username = createUsernameFromEmail(normalizedEmail);
-        User user = userCreator.create(username, normalizedEmail, password, institution.trim());
-        userPersistence.save(user);
+        Researcher researcher = researcherCreator.create(username, normalizedEmail, password, institution.trim());
+        userPersistence.save(researcher);
 
-        return user;
+        return researcher;
     }
 
     private String createUsernameFromEmail(String email) {

@@ -2,13 +2,13 @@ package com.system.paperflow.application.persistence;
 
 import java.util.Optional;
 
-import com.system.paperflow.domain.entity.User;
+import com.system.paperflow.domain.entity.Researcher;
 
 public interface UserPersistence {
 
     boolean existsByEmail(String email);
 
-    void save(User user);
+    void save(Researcher researcher);
 
-    Optional<User> findByEmail(String email);
+    Optional<Researcher> findByEmail(String email);
 }

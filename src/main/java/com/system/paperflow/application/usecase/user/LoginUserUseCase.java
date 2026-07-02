@@ -3,7 +3,7 @@ package com.system.paperflow.application.usecase.user;
 import com.system.paperflow.application.exception.InvalidCredentialsException;
 import com.system.paperflow.application.exception.UserPersistenceException;
 import com.system.paperflow.application.persistence.UserPersistence;
-import com.system.paperflow.domain.entity.User;
+import com.system.paperflow.domain.entity.Researcher;
 
 public class LoginUserUseCase {
 
@@ -13,12 +13,12 @@ public class LoginUserUseCase {
         this.userPersistence = userPersistence;
     }
 
-    public User execute(String email, String password) {
+    public Researcher execute(String email, String password) {
         String normalizedEmail = email.trim().toLowerCase();
-        User user = userPersistence.findByEmail(normalizedEmail).orElseThrow(() -> new UserPersistenceException("Usuario não encontrado"));
+        Researcher researcher = userPersistence.findByEmail(normalizedEmail).orElseThrow(() -> new UserPersistenceException("Usuario não encontrado"));
 
-        if (!user.getPassword().equals(password)) throw new InvalidCredentialsException();
+        if (!researcher.getPassword().equals(password)) throw new InvalidCredentialsException();
 
-        return user;
+        return researcher;
     }
 }

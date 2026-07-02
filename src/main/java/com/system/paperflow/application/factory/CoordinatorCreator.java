@@ -1,12 +1,13 @@
 package com.system.paperflow.application.factory;
 
-import com.system.paperflow.domain.entity.Coordinator;
-import com.system.paperflow.domain.entity.User;
+import com.system.paperflow.domain.entity.CoordinatorProfile;
+import com.system.paperflow.domain.entity.Researcher;
 
-public class CoordinatorCreator extends UserCreator {
+public class CoordinatorCreator {
 
-    @Override
-    protected User createUser(String username, String email, String password, String institution) {
-        return new Coordinator(username, email, password, institution);
+    public Researcher create(String username, String email, String password, String institution) {
+        Researcher researcher = new Researcher(username, email, password, institution);
+        researcher.addProfile(new CoordinatorProfile());
+        return researcher;
     }
 }
