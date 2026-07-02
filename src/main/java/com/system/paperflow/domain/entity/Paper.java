@@ -44,6 +44,40 @@ public class Paper {
         areas.add(area);
     }
 
+    public void addCollaborator(Researcher collaborator) {
+        if (!collaborators.contains(collaborator)) {
+            collaborators.add(collaborator);
+        }
+    }
+
+    public void markUnderReview() {
+        this.status = PaperStatus.UNDER_REVIEW;
+    }
+
+    public void accept() {
+        this.status = PaperStatus.ACCEPTED;
+    }
+
+    public void reject() {
+        this.status = PaperStatus.REJECTED;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public Event getEvent() {
+        return event;
+    }
+
+    public PaperStatus getStatus() {
+        return status;
+    }
+
     public Researcher getAuthor() {
         return author;
     }
@@ -58,21 +92,5 @@ public class Paper {
 
     public UUID getId() {
         return id;
-    }
-
-    public String getSummary() {
-        return summary;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public PaperStatus getStatus() {
-        return status;
-    }
-
-    public Event getEvent() {
-        return event;
     }
 }

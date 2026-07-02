@@ -11,14 +11,6 @@ public class ReviewAssignment {
         this.reviewer = reviewer;
     }
 
-    public void finish(Review review) {
-        if (this.review != null) {
-            throw new IllegalStateException("Este artigo já foi avaliado por este revisor.");
-        }
-
-        this.review = review;
-    }
-
     public boolean isFinished() {
         return review != null;
     }
@@ -29,6 +21,18 @@ public class ReviewAssignment {
 
     public Researcher getReviewer() {
         return reviewer;
+    }
+
+    public void finish(Review review) {
+        if (review == null) {
+            throw new IllegalArgumentException("A revisão não pode ser vazia.");
+        }
+
+        if (isFinished()) {
+            throw new IllegalStateException("Esta revisão já foi concluída.");
+        }
+
+        this.review = review;
     }
 
     public Review getReview() {
