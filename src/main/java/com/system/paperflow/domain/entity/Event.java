@@ -61,11 +61,41 @@ public class Event {
             throw new IllegalStateException("Event already started");
         }
 
-        committee.add(researcher);
+        if (!committee.contains(researcher)) {
+            committee.add(researcher);
+        }
     }
 
     public boolean isOpenForSubmission() {
         return started && !LocalDate.now().isAfter(submissionDeadline);
+    }
+
+    public boolean isStarted() {
+        return started;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public LocalDate getSubmissionDeadline() {
+        return submissionDeadline;
+    }
+
+    public EventCategory getCategory() {
+        return category;
     }
 
     public List<ThematicArea> getThematicAreas() {

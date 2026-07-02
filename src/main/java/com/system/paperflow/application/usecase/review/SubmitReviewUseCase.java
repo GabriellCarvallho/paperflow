@@ -1,9 +1,10 @@
 package com.system.paperflow.application.usecase.review;
 
 import com.system.paperflow.application.gateway.ReviewAssignmentGateway;
-import com.system.paperflow.domain.entity.*;
+import com.system.paperflow.domain.entity.Researcher;
+import com.system.paperflow.domain.entity.Review;
+import com.system.paperflow.domain.entity.ReviewAssignment;
 import com.system.paperflow.domain.enums.Verdict;
-import com.system.paperflow.commons.StringUtils;
 
 import java.util.UUID;
 
@@ -18,17 +19,26 @@ public class SubmitReviewUseCase {
     public ReviewAssignment execute(UUID paperId, Researcher reviewer, String contribution, String criticism, Verdict verdict) {
 
         ReviewAssignment assignment = assignmentGateway.findByReviewerEmail(paperId, reviewer.getEmail()).orElseThrow(() ->
-                        new IllegalArgumentException("Artigo não atribuído a este revisor."));
+                new IllegalArgumentException("Artigo não atribuído a este revisor."));
 
-        Review review = new Review(
-                reviewer,
-                contribution,
-                criticism,
-                verdict
-        );
+        if (contribution == null || contribution.isBlank()) {
+            throw new IllegalArgumentException("Informe as contribuições do artigo.");
+        }
 
-//        assignment.finish(review);
-//        assignment.getPaper().markAsCompleted();
+        if (criticism == null || criticism.isBlank()) {
+            throw new IllegalArgumentException("Informe os pontos de crítica do artigo.");
+        }
+
+        Review review = new Review(reviewer, contribution.trim(), criticism.trim(), verdict);
+        assignment.finish(review);
+
+        if (verdict == Verdict.ACCEPTED || verdict == Verdict.WEAKLY_ACCEPTED) {
+            assignment.getPaper().accept();
+        } else {
+            assignment.getPaper().reject();
+        }
+
+        assignmentGateway.save(assignment);
         return assignment;
     }
 }

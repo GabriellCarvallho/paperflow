@@ -55,6 +55,8 @@ public class DistributePapersUseCase {
                     );
 
             if (!assignmentGateway.exists(paper.getId(), selected.getEmail())) {
+                paper.markUnderReview();
+                paperGateway.save(paper);
                 ReviewAssignment assignment = assignmentGateway.save(new ReviewAssignment(paper, selected));
                 assignments.add(assignment);
             }

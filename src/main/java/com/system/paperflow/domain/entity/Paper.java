@@ -2,6 +2,8 @@ package com.system.paperflow.domain.entity;
 
 import java.util.*;
 
+import com.system.paperflow.domain.enums.PaperStatus;
+
 public class Paper {
 
     private UUID id;
@@ -11,6 +13,7 @@ public class Paper {
     private List<Researcher> collaborators;
     private Set<ThematicArea> areas;
     private Event event;
+    private PaperStatus status;
 
     public Paper(String title, String summary, Researcher author, Event event) {
         this.id = UUID.randomUUID();
@@ -20,6 +23,7 @@ public class Paper {
         this.event = event;
         this.collaborators = new ArrayList<>();
         this.areas = new HashSet<>();
+        this.status = PaperStatus.SUBMITTED;
     }
 
     public void addThematicArea(ThematicArea area) {
@@ -27,6 +31,40 @@ public class Paper {
         if (!event.getThematicAreas().contains(area)) throw new IllegalArgumentException("A área temática não pertence ao evento.");
 
         areas.add(area);
+    }
+
+    public void addCollaborator(Researcher collaborator) {
+        if (!collaborators.contains(collaborator)) {
+            collaborators.add(collaborator);
+        }
+    }
+
+    public void markUnderReview() {
+        this.status = PaperStatus.UNDER_REVIEW;
+    }
+
+    public void accept() {
+        this.status = PaperStatus.ACCEPTED;
+    }
+
+    public void reject() {
+        this.status = PaperStatus.REJECTED;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public Event getEvent() {
+        return event;
+    }
+
+    public PaperStatus getStatus() {
+        return status;
     }
 
     public Researcher getAuthor() {
