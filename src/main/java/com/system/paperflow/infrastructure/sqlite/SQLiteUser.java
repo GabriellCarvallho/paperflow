@@ -18,15 +18,15 @@ import java.sql.Statement;
 import java.util.Collections;
 import java.util.Optional;
 
-public class SQLiteUserAdapter implements UserPersistence {
+public class SQLiteUser implements UserPersistence {
 
     private final String databaseUrl;
 
-    public SQLiteUserAdapter(String databasePath) {
+    public SQLiteUser(String databasePath) {
         this(Path.of(databasePath));
     }
 
-    public SQLiteUserAdapter(Path databasePath) {
+    public SQLiteUser(Path databasePath) {
         loadSQLiteDriver();
         createParentDirectoryIfNecessary(databasePath);
         this.databaseUrl = "jdbc:sqlite:" + databasePath.toAbsolutePath().normalize();
@@ -46,7 +46,7 @@ public class SQLiteUserAdapter implements UserPersistence {
                 return resultSet.next();
             }
         } catch (SQLException exception) {
-            throw new UserPersistenceException("Nao foi possivel verificar o email do usuario.", exception);
+            throw new UserPersistenceException("Nao foi possivel verificar o email do usuario.");
         }
     }
 
@@ -65,7 +65,7 @@ public class SQLiteUserAdapter implements UserPersistence {
 
             statement.executeUpdate();
         } catch (SQLException exception) {
-            throw new UserPersistenceException("Nao foi possivel salvar o usuario.", exception);
+            throw new UserPersistenceException("Nao foi possivel salvar o usuario.");
         }
     }
 
@@ -86,7 +86,7 @@ public class SQLiteUserAdapter implements UserPersistence {
                 return Optional.of(mapResultSetToUser(resultSet));
             }
         } catch (SQLException exception) {
-            throw new UserPersistenceException("Nao foi possivel buscar o usuario por email.", exception);
+            throw new UserPersistenceException("Nao foi possivel buscar o usuario por email.");
         }
     }
 
@@ -95,8 +95,7 @@ public class SQLiteUserAdapter implements UserPersistence {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException exception) {
             throw new UserPersistenceException(
-                    "Driver SQLite JDBC nao encontrado. Abra o projeto como Maven para carregar as dependencias do pom.xml.",
-                    exception
+                    "Driver SQLite JDBC nao encontrado. Abra o projeto como Maven para carregar as dependencias do pom.xml."
             );
         }
     }
@@ -111,7 +110,7 @@ public class SQLiteUserAdapter implements UserPersistence {
         try {
             Files.createDirectories(parent);
         } catch (Exception exception) {
-            throw new UserPersistenceException("Nao foi possivel criar a pasta do banco de dados.", exception);
+            throw new UserPersistenceException("Nao foi possivel criar a pasta do banco de dados.");
         }
     }
 
@@ -138,7 +137,7 @@ public class SQLiteUserAdapter implements UserPersistence {
              Statement statement = connection.createStatement()) {
             statement.execute(sql);
         } catch (SQLException exception) {
-            throw new UserPersistenceException("Nao foi possivel criar a tabela de usuarios.", exception);
+            throw new UserPersistenceException("Nao foi possivel criar a tabela de usuarios.");
         }
     }
 

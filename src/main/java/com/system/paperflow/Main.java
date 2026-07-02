@@ -4,8 +4,9 @@ import java.util.function.Supplier;
 
 import com.system.paperflow.application.factory.ResearcherCreator;
 import com.system.paperflow.application.persistence.UserPersistence;
+import com.system.paperflow.application.usecase.user.LoginUserUseCase;
 import com.system.paperflow.application.usecase.user.RegisterUserUseCase;
-import com.system.paperflow.infrastructure.sqlite.SQLiteUserAdapter;
+import com.system.paperflow.infrastructure.sqlite.SQLiteUser;
 import com.system.paperflow.presentation.controller.LoginController;
 import com.system.paperflow.presentation.controller.RegisterController;
 import com.system.paperflow.presentation.screen.BlankScreen;
@@ -17,10 +18,11 @@ import com.system.paperflow.presentation.ui.ScreenUtils;
 public class Main {
 
     public static void main(String[] args) {
-        UserPersistence userPersistence = new SQLiteUserAdapter("data/paper-flow.db");
+        UserPersistence userPersistence = new SQLiteUser("data/paper-flow.db");
         RegisterUserUseCase registerUserUseCase = new RegisterUserUseCase(userPersistence, new ResearcherCreator());
+        LoginUserUseCase loginUserUseCase = new LoginUserUseCase(userPersistence);
         RegisterController registerController = new RegisterController(registerUserUseCase);
-        LoginController loginController = new LoginController(userPersistence);
+        LoginController loginController = new LoginController(loginUserUseCase);
 
         Runnable onNavigateToLogin = () -> ScreenUtils.navigateTo("login");
         Runnable onNavigateToRegister = () -> ScreenUtils.navigateTo("register");
