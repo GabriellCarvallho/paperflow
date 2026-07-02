@@ -1,5 +1,7 @@
 package com.system.paperflow.infrastructure.gateway;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import com.system.paperflow.application.gateway.EmailGateway;
@@ -18,10 +20,12 @@ public class JakartaMailGateway implements EmailGateway {
 
     private final Session session;
     private final String from;
+    private final List<EmailMessage> sentMessages;
 
     public JakartaMailGateway(Session session, String from) {
         this.session = session;
         this.from = from;
+        this.sentMessages = new ArrayList<>();
     }
 
     @Override
@@ -47,10 +51,16 @@ public class JakartaMailGateway implements EmailGateway {
             );
 
             Transport.send(mimeMessage);
+            sentMessages.add(message);
 
         } catch (MessagingException e) {
             throw new RuntimeException("Erro ao enviar email", e);
         }
+    }
+
+    @Override
+    public List<EmailMessage> sentMessages() {
+        return List.copyOf(sentMessages);
     }
 
     public static JakartaMailGatewayBuilder builder() {

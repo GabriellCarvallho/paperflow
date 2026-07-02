@@ -1,4 +1,4 @@
-package com.system.paperflow.infrastructure.memory;
+package com.system.paperflow.infrastructure.gateway;
 
 import com.system.paperflow.application.gateway.ReviewAssignmentGateway;
 import com.system.paperflow.domain.entity.Event;

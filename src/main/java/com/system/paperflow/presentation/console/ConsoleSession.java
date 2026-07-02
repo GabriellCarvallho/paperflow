@@ -5,9 +5,14 @@ import com.system.paperflow.domain.entity.Researcher;
 public class ConsoleSession {
 
     private Researcher currentUser;
+    private boolean running = true;
 
     public boolean isAuthenticated() {
         return currentUser != null;
+    }
+
+    public boolean isRunning() {
+        return running;
     }
 
     public Researcher currentUser() {
@@ -23,5 +28,9 @@ public class ConsoleSession {
 
     public void logout() {
         this.currentUser = null;
+    }
+
+    public void finish() {
+        running = false;
     }
 }

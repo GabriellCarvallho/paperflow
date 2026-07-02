@@ -3,6 +3,7 @@ package com.system.paperflow;
 import com.system.paperflow.application.event.EventManager;
 import com.system.paperflow.application.factory.CoordinatorFactory;
 import com.system.paperflow.application.factory.ResearcherFactory;
+import com.system.paperflow.application.gateway.EmailGateway;
 import com.system.paperflow.application.gateway.PaperGateway;
 import com.system.paperflow.application.gateway.ReviewAssignmentGateway;
 import com.system.paperflow.application.gateway.UserGateway;
@@ -22,51 +23,84 @@ import com.system.paperflow.application.usecase.thematic.CreateThematicAreaUseCa
 import com.system.paperflow.application.usecase.user.EnsureDefaultCoordinatorUseCase;
 import com.system.paperflow.application.usecase.user.LoginUserUseCase;
 import com.system.paperflow.application.usecase.user.RegisterUserUseCase;
-import com.system.paperflow.infrastructure.memory.InMemoryEmailGateway;
-import com.system.paperflow.infrastructure.memory.InMemoryPaperGateway;
-import com.system.paperflow.infrastructure.memory.InMemoryReviewAssignmentGateway;
-import com.system.paperflow.infrastructure.memory.InMemoryUserGateway;
+import com.system.paperflow.infrastructure.gateway.InMemoryPaperGateway;
+import com.system.paperflow.infrastructure.gateway.InMemoryReviewAssignmentGateway;
+import com.system.paperflow.infrastructure.gateway.InMemoryUserGateway;
+import com.system.paperflow.infrastructure.gateway.JakartaMailGateway;
 import com.system.paperflow.presentation.console.ConsoleApp;
 import com.system.paperflow.presentation.console.ConsolePrinter;
 import com.system.paperflow.presentation.console.ConsoleReader;
+import com.system.paperflow.presentation.console.ConsoleRouter;
 import com.system.paperflow.presentation.console.ConsoleSession;
+import com.system.paperflow.presentation.console.screen.CommitteeScreen;
+import com.system.paperflow.presentation.console.screen.CoordinatorMenuScreen;
+import com.system.paperflow.presentation.console.screen.DashboardScreen;
+import com.system.paperflow.presentation.console.screen.EmailScreen;
+import com.system.paperflow.presentation.console.screen.EventScreen;
+import com.system.paperflow.presentation.console.screen.PaperScreen;
+import com.system.paperflow.presentation.console.screen.PublicMenuScreen;
+import com.system.paperflow.presentation.console.screen.ResearcherMenuScreen;
+import com.system.paperflow.presentation.console.screen.ReviewScreen;
+import com.system.paperflow.presentation.console.screen.ThematicAreaScreen;
+
+import io.github.cdimascio.dotenv.Dotenv;
 
 import java.util.Scanner;
 
 public class Main {
 
     public static void main(String[] args) {
+
+        Dotenv dotenv = Dotenv.load();
+
+        int port = Integer.parseInt(dotenv.get("PORT"));
+        String host = dotenv.get("HOST");
+        String username = dotenv.get("EMAIL_USERNAME");
+        String password = dotenv.get("PASSWORD");
+
         EventManager eventManager = new EventManager();
         UserGateway userGateway = new InMemoryUserGateway();
         PaperGateway paperGateway = new InMemoryPaperGateway();
         ReviewAssignmentGateway assignmentGateway = new InMemoryReviewAssignmentGateway();
-        InMemoryEmailGateway emailGateway = new InMemoryEmailGateway();
+
+        EmailGateway emailGateway = JakartaMailGateway.builder().withHost(host).withPassword(password).withPort(port).withUsername(username).build();
+
 
         PaperDecisionPublisher publisher = new PaperDecisionPublisher();
         publisher.addObserver(new AuthorNotificationObserver(emailGateway));
 
-        ConsoleApp app = new ConsoleApp(
-                new ConsoleReader(new Scanner(System.in)),
-                new ConsolePrinter(),
-                new ConsoleSession(),
-                eventManager,
-                new RegisterUserUseCase(userGateway, new ResearcherFactory()),
-                new LoginUserUseCase(userGateway),
-                new EnsureDefaultCoordinatorUseCase(userGateway, new CoordinatorFactory()),
-                new CreateEventUseCase(eventManager),
-                new StartEventUseCase(eventManager),
-                new CreateThematicAreaUseCase(eventManager),
-                new AddReviewerUseCase(eventManager, userGateway),
-                new SubmitPaperUseCase(eventManager, paperGateway, userGateway),
-                new ListAuthorPapersUseCase(paperGateway),
-                new ListEventPapersUseCase(paperGateway),
-                new DistributePapersUseCase(paperGateway, eventManager, assignmentGateway),
-                new ListEventAssignmentsUseCase(assignmentGateway),
-                new ListReviewerAssignmentsUseCase(assignmentGateway),
-                new SubmitReviewUseCase(assignmentGateway, publisher),
-                assignmentGateway,
-                emailGateway
-        );
+        ConsoleReader reader = new ConsoleReader(new Scanner(System.in));
+        ConsolePrinter printer = new ConsolePrinter();
+        ConsoleSession session = new ConsoleSession();
+
+        RegisterUserUseCase registerUserUseCase = new RegisterUserUseCase(userGateway, new ResearcherFactory());
+        LoginUserUseCase loginUserUseCase = new LoginUserUseCase(userGateway);
+        EnsureDefaultCoordinatorUseCase ensureDefaultCoordinatorUseCase = new EnsureDefaultCoordinatorUseCase(userGateway, new CoordinatorFactory());
+        CreateEventUseCase createEventUseCase = new CreateEventUseCase(eventManager);
+        StartEventUseCase startEventUseCase = new StartEventUseCase(eventManager);
+        CreateThematicAreaUseCase createThematicAreaUseCase = new CreateThematicAreaUseCase(eventManager);
+        AddReviewerUseCase addReviewerUseCase = new AddReviewerUseCase(eventManager, userGateway);
+        SubmitPaperUseCase submitPaperUseCase = new SubmitPaperUseCase(eventManager, paperGateway, userGateway);
+        ListAuthorPapersUseCase listAuthorPapersUseCase = new ListAuthorPapersUseCase(paperGateway);
+        ListEventPapersUseCase listEventPapersUseCase = new ListEventPapersUseCase(paperGateway);
+        DistributePapersUseCase distributePapersUseCase = new DistributePapersUseCase(paperGateway, eventManager, assignmentGateway);
+        ListEventAssignmentsUseCase listEventAssignmentsUseCase = new ListEventAssignmentsUseCase(assignmentGateway);
+        ListReviewerAssignmentsUseCase listReviewerAssignmentsUseCase = new ListReviewerAssignmentsUseCase(assignmentGateway);
+        SubmitReviewUseCase submitReviewUseCase = new SubmitReviewUseCase(assignmentGateway, publisher);
+
+        ConsoleApp app = new ConsoleApp(printer, session, ensureDefaultCoordinatorUseCase);
+        ConsoleRouter router = app.getRouter();
+
+        router.register(ConsoleRouter.PUBLIC_MENU, new PublicMenuScreen(reader, printer, session, router, eventManager, assignmentGateway, loginUserUseCase, registerUserUseCase));
+        router.register(ConsoleRouter.COORDINATOR_MENU, new CoordinatorMenuScreen(reader, printer, session, router, eventManager, assignmentGateway, startEventUseCase, distributePapersUseCase, listEventPapersUseCase));
+        router.register(ConsoleRouter.RESEARCHER_MENU, new ResearcherMenuScreen(reader, printer, session, router, eventManager, assignmentGateway));
+        router.register(ConsoleRouter.EVENT, new EventScreen(reader, printer, session, router, eventManager, assignmentGateway, createEventUseCase));
+        router.register(ConsoleRouter.THEMATIC_AREA, new ThematicAreaScreen(reader, printer, session, router, eventManager, assignmentGateway, createThematicAreaUseCase));
+        router.register(ConsoleRouter.COMMITTEE, new CommitteeScreen(reader, printer, session, router, eventManager, assignmentGateway, addReviewerUseCase));
+        router.register(ConsoleRouter.PAPER, new PaperScreen(reader, printer, session, router, eventManager, assignmentGateway, submitPaperUseCase, listAuthorPapersUseCase));
+        router.register(ConsoleRouter.REVIEW, new ReviewScreen(reader, printer, session, router, eventManager, assignmentGateway, listReviewerAssignmentsUseCase, submitReviewUseCase));
+        router.register(ConsoleRouter.DASHBOARD, new DashboardScreen(reader, printer, session, router, eventManager, assignmentGateway, listEventPapersUseCase, listEventAssignmentsUseCase));
+        router.register(ConsoleRouter.EMAIL, new EmailScreen(reader, printer, session, router, eventManager, assignmentGateway, emailGateway));
 
         app.start();
     }

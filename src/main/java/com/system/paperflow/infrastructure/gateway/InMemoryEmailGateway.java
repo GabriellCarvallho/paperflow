@@ -1,4 +1,4 @@
-package com.system.paperflow.infrastructure.memory;
+package com.system.paperflow.infrastructure.gateway;
 
 import com.system.paperflow.application.gateway.EmailGateway;
 import com.system.paperflow.domain.entity.EmailMessage;
@@ -15,6 +15,7 @@ public class InMemoryEmailGateway implements EmailGateway {
         sentMessages.add(message);
     }
 
+    @Override
     public List<EmailMessage> sentMessages() {
         return List.copyOf(sentMessages);
     }
