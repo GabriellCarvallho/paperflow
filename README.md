@@ -129,7 +129,7 @@ A tabela abaixo serve como esqueleto para a documentação final. Cada integrant
 
 | Integrante | Módulo/Requisitos | Padrões GoF utilizados | Status |
 |---|---|---|---|
-| Felipe Oliveira Raimundo | RF02 - Cadastro de usuários; RF03 - Áreas temáticas; RF04 - Comitê técnico | Factory Method | Implementado em versão funcional inicial |
+| Felipe Oliveira Raimundo | RF02 - Cadastro de usuários; RF03 - Áreas temáticas; RF04 - Comitê técnico | Factory Method; Composite; Observer | Implementado em versão funcional inicial |
 | Gabriel Pereira de Carvalho | RF01 - Início do evento; RF05 - Submissão e ciclo de vida do artigo; RF08 - Dashboard; RF10 - Filtro de artigos (adicional) | State; Chain of Responsibility | Implementado em versão funcional inicial |
 | Daniel Alves da Silva | RF06 - Distribuição de artigos; RF07 - Avaliação; RF09 - Notificação de autores | Adicionar padrões utilizados | Adicionar status |
 
@@ -185,6 +185,7 @@ Para permitir testar o sistema sem exigir um cadastro manual, o sistema cria aut
 ---
 
 ### 6.2 RF03 - Cadastro de áreas temáticas
+#### Padrão utilizado: Composite
 
 O RF03 permite que o coordenador cadastre as áreas temáticas de um evento. Cada área é uma palavra-chave simples, usada posteriormente pelos autores ao submeter artigos (RF05) e pelos revisores para indicar suas expertises (RF04).
 
@@ -202,6 +203,8 @@ O RF03 permite que o coordenador cadastre as áreas temáticas de um evento. Cad
 ---
 
 ### 6.3 RF04 - Comitê técnico de avaliação
+
+#### Padrão utilizado: Observer
 
 O RF04 permite que o coordenador monte o comitê técnico do evento, adicionando pesquisadores já cadastrados como revisores e associando a cada um suas áreas de expertise.
 
