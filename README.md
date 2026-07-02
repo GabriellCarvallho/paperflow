@@ -3,11 +3,11 @@
 **Documentação do projeto**
 `README.md` e documentação final do projeto.
 
-**Equipe:** Adicionar nomes dos integrantes.
-**Disciplina:** Padrões de Projeto de Software.
-**Professor:** Adicionar nome do professor.
-**Repositório:** Adicionar link do GitHub.
-**Branch atual:** Adicionar nome da branch ou branch final de entrega.
+**Equipe:** Gabriel Pereira de Carvalho, Felipe Oliveira Raimundo, Daniel Alves da Silva
+**Disciplina:** Padrões de Projeto de Software
+**Professor:** Alex Sandro da Cunha Rêgo
+**Curso:** CST em Sistemas para Internet — IFPB
+**Repositório:** https://github.com/GabriellCarvallho/paperflow
 
 ---
 
@@ -15,7 +15,7 @@
 
 PaperFlow é um sistema para gerenciamento do fluxo de submissão e avaliação de artigos científicos em eventos acadêmicos. A proposta é permitir o cadastro de usuários, submissão de artigos, organização de áreas temáticas, formação de comitê técnico, avaliação de trabalhos e geração de informações de acompanhamento do evento.
 
-**Descrição completa do projeto:** Adicionar uma descrição geral final depois que todos os módulos estiverem integrados.
+**Descrição completa do projeto:** O PaperFlow cobre todo o ciclo de um evento acadêmico de submissão de artigos. Um coordenador cria o evento, define suas áreas temáticas e monta o comitê técnico convidando pesquisadores já cadastrados. Uma vez iniciado, o evento passa a aceitar submissões: autores enviam artigos vinculados a uma ou mais áreas temáticas, podendo indicar coautores. Os artigos são então distribuídos aos revisores do comitê, que os avaliam e emitem um parecer (aceito ou rejeitado). Os autores são notificados por e-mail sobre o resultado da avaliação, e o coordenador acompanha o andamento de tudo isso por um dashboard com o resumo do evento, além de poder consultar os artigos submetidos através de filtros combinados por área temática, status e autor.
 
 ---
 
@@ -24,7 +24,7 @@ PaperFlow é um sistema para gerenciamento do fluxo de submissão e avaliação 
 - **Linguagem:** Java.
 - **Gerenciamento do projeto:** Maven (com Maven Wrapper — `./mvnw`).
 - **Persistência atual:** em memória, através de gateways (`InMemoryUserGateway`, `InMemoryPaperGateway`, `InMemoryReviewAssignmentGateway`, `InMemoryEmailGateway`), com previsão de substituição por persistência em banco de dados.
-- **Interface atual:** interface gráfica própria, construída sobre um sistema de telas e componentes (`presentation/ui`).
+- **Interface atual:** console, com menu interativo de texto.
 - **Organização arquitetural:** separação em camadas inspirada na Arquitetura Limpa.
 
 **Observação sobre persistência:** os dados atualmente não são persistidos entre execuções — cada gateway guarda as informações em memória enquanto o programa está em execução. A troca por uma implementação em banco de dados é possível sem alterar os casos de uso, já que eles dependem apenas das interfaces de gateway (Dependency Inversion Principle).
@@ -35,34 +35,91 @@ PaperFlow é um sistema para gerenciamento do fluxo de submissão e avaliação 
 
 | Camada/Pacote | Responsabilidade |
 |---|---|
-| `domain` | Entidades e regras centrais do domínio, como `User`, `Topic`, `TopicGroup`, `Event`, `Paper` e `CommitteeInvitation`. |
-| `application` | Casos de uso, fábricas, interfaces de gateway, filtros e eventos/observadores da aplicação. |
+| `domain` | Entidades e regras centrais do domínio, como `User`, `ThematicArea`, `Event`, `Paper`. |
+| `application` | Casos de uso, fábricas, interfaces de gateway e filtros da aplicação. |
 | `infrastructure` | Implementações técnicas, como os gateways em memória e o envio de e-mail. |
-| `presentation` | Interface gráfica do sistema (telas e componentes de UI). |
+| `presentation` | Interface em modo console do sistema (menus e leitura/escrita de texto). |
 
 ---
 
 ## 4. Como executar o projeto
 
-O projeto inclui o Maven Wrapper, então não é necessário ter o Maven instalado para executá-lo.
+O projeto inclui o Maven Wrapper, então não é necessário ter o Maven instalado para executá-lo — apenas o Java (JDK 17 ou superior).
 
-1. Clonar ou baixar o projeto do GitHub.
-2. Abrir um terminal na pasta raiz do projeto (onde está o `pom.xml`).
-3. Rodar o projeto:
+### Passo a passo
+
+1. Clonar ou baixar o projeto do GitHub:
+   ```bash
+   git clone https://github.com/GabriellCarvallho/paperflow.git
+   cd paperflow
+   ```
+
+2. Compilar o projeto:
 
    No Linux/Mac:
    ```bash
    ./mvnw clean compile
-   ./mvnw exec:java -Dexec.mainClass="com.system.paperflow.Main"
    ```
 
    No Windows:
    ```cmd
    mvnw.cmd clean compile
+   ```
+
+3. Executar o sistema:
+
+   No Linux/Mac:
+   ```bash
+   ./mvnw exec:java -Dexec.mainClass="com.system.paperflow.Main"
+   ```
+
+   No Windows:
+   ```cmd
    mvnw.cmd exec:java -Dexec.mainClass="com.system.paperflow.Main"
    ```
 
-Não é necessário instalar nenhum banco de dados: os dados são mantidos em memória durante a execução.
+4. O sistema abre em modo console, com um menu interativo guiando o usuário pelas funcionalidades disponíveis (cadastro, login, gestão de eventos, submissão de artigos, avaliação, dashboard, etc).
+
+Não é necessário instalar nenhum banco de dados: os dados são mantidos em memória durante a execução, e um coordenador padrão é criado automaticamente para permitir testar o sistema sem cadastro prévio (ver seção 6.1).
+
+### Alternativa: executar pela IDE
+
+1. Abrir o projeto na IDE (IntelliJ, Eclipse ou VS Code com extensão Java) pela pasta que contém o `pom.xml`.
+2. Aguardar a IDE carregar as dependências Maven.
+3. Executar a classe `src/main/java/com/system/paperflow/Main.java`.
+
+### Fluxo de uso do sistema
+
+Ao iniciar, o sistema cria automaticamente um coordenador padrão e exibe suas credenciais na tela — não é necessário cadastrar um coordenador manualmente para testar o sistema.
+
+**Menu inicial:**
+```text
+1. Entrar
+2. Cadastrar pesquisador
+3. Ver credenciais do coordenador
+4. Sair
+```
+
+**Fluxo sugerido para testar o sistema de ponta a ponta:**
+
+1. **Entrar como coordenador** (opção 3 para ver as credenciais, depois opção 1 para logar).
+2. No **menu do coordenador**, nessa ordem:
+   - `Criar novo evento` — informa nome, cidade, data final, prazo de submissão e categoria.
+   - `Cadastrar área temática` — cadastra ao menos uma área para o evento.
+   - `Adicionar revisor ao comitê` — informa o e-mail de um pesquisador já cadastrado e suas áreas de expertise (é necessário ao menos um pesquisador cadastrado antes deste passo — ver item 3 abaixo).
+   - `Iniciar recebimento de submissões` — ativa o evento (só é possível com ao menos uma área temática e um revisor cadastrados).
+3. **Sair da conta** e **cadastrar um pesquisador** (menu inicial, opção 2) para atuar como autor/revisor.
+4. **Entrar como pesquisador** e, no **menu do pesquisador**:
+   - `Submeter artigo` — informa título, resumo, áreas e coautores (opcional).
+   - `Meus artigos` — lista os artigos submetidos e, quando avaliados, os pareceres recebidos.
+5. **Voltar como coordenador** para:
+   - `Distribuir artigos para revisão` — distribui automaticamente os artigos submetidos entre os revisores do comitê.
+   - `Listar artigos do evento` — consulta os artigos submetidos.
+   - `Dashboard` — visualiza o resumo do evento (submetidos, revisores, avaliados, pendentes).
+6. **Entrar novamente como o pesquisador que é revisor** para:
+   - `Minhas revisões` — lista as atribuições de revisão recebidas.
+   - `Concluir revisão` — registra contribuições, críticas e o veredito de uma revisão pendente.
+7. Em qualquer momento, a opção `Ver emails registrados` (disponível nos dois menus) mostra as notificações que o sistema enviaria aos autores sobre o resultado das avaliações.
 
 ---
 
@@ -72,15 +129,15 @@ A tabela abaixo serve como esqueleto para a documentação final. Cada integrant
 
 | Integrante | Módulo/Requisitos | Padrões GoF utilizados | Status |
 |---|---|---|---|
-| Felipe Oliveira Raimundo | RF02 - Cadastro de usuários; RF03 - Áreas temáticas; RF04 - Comitê técnico | Factory Method; Composite; Observer | Implementado em versão funcional inicial |
-| Gabriel | RF01 - Início do evento; RF05 - Submissão e ciclo de vida do artigo; RF08 - Dashboard; RF10 - Filtro de artigos (adicional) | Chain of Responsibility | Implementado em versão funcional inicial |
-| Daniel | RF06 - Distribuição de artigos; RF07 - Avaliação; RF09 - Notificação de autores | Adicionar padrões utilizados | Adicionar status |
+| Felipe Oliveira Raimundo | RF02 - Cadastro de usuários; RF03 - Áreas temáticas; RF04 - Comitê técnico | Factory Method | Implementado em versão funcional inicial |
+| Gabriel Pereira de Carvalho | RF01 - Início do evento; RF05 - Submissão e ciclo de vida do artigo; RF08 - Dashboard; RF10 - Filtro de artigos (adicional) | State; Chain of Responsibility | Implementado em versão funcional inicial |
+| Daniel Alves da Silva | RF06 - Distribuição de artigos; RF07 - Avaliação; RF09 - Notificação de autores | Adicionar padrões utilizados | Adicionar status |
 
 ---
 
 ## 6. Módulo de Usuários, Áreas Temáticas e Comitê Técnico
 
-Este módulo contempla os requisitos **RF02, RF03 e RF04**. Eles foram implementados em sequência porque um requisito prepara a base para o próximo: primeiro o sistema precisa cadastrar usuários, depois o coordenador cadastra as áreas temáticas, e por fim o coordenador forma o comitê técnico com usuários previamente cadastrados.
+Este módulo contempla os requisitos **RF02, RF03 e RF04**. Eles foram implementados em sequência porque um requisito prepara a base para o próximo: primeiro o sistema precisa cadastrar usuários, depois o coordenador cadastra as áreas temáticas do evento, e por fim o coordenador adiciona revisores ao comitê técnico a partir de usuários já cadastrados.
 
 ```text
 RF02 - Cadastro de usuários
@@ -94,145 +151,78 @@ RF04 - Comitê técnico de avaliação
 
 ### 6.1 RF02 - Cadastro de usuários
 
-O RF02 permite cadastrar usuários no sistema informando **e-mail, senha e instituição**. O e-mail é tratado como chave do usuário, portanto a principal regra de negócio é impedir o cadastro de dois usuários com o mesmo e-mail.
+O RF02 permite cadastrar pesquisadores no sistema informando **e-mail, senha e instituição**. O e-mail é tratado como chave do usuário, portanto a principal regra de negócio é impedir o cadastro de dois usuários com o mesmo e-mail.
 
-Nesta primeira versão, o usuário comum entra como `Researcher`. O papel de `Reviewer` não é criado diretamente no cadastro: ele surge depois, no RF04, quando o usuário aceita o convite para participar do comitê técnico.
+Todo usuário cadastrado por este fluxo entra como `Researcher`. Um pesquisador passa a atuar também como revisor quando é adicionado ao comitê técnico de um evento (RF04).
 
 #### Padrão utilizado: Factory Method
 
-O **Factory Method** foi utilizado para centralizar a criação dos tipos de usuário. Em vez de espalhar criações diretas de `Researcher`, `Reviewer` ou `Coordinator` pelos casos de uso, a criação é delegada para classes criadoras.
+O **Factory Method** foi utilizado para centralizar a criação dos usuários. Em vez de instanciar diretamente nos casos de uso, a criação é delegada a uma classe criadora dedicada, o que facilita adicionar variações futuras sem alterar o fluxo de cadastro.
 
 ```text
-UserCreator
- ├── ResearcherCreator
- ├── ReviewerCreator
- └── CoordinatorCreator
+ResearcherFactory → cria Researcher
+CoordinatorFactory → cria o coordenador padrão do sistema
 ```
-
-Essa escolha deixa o código mais fácil de estender. Caso surja outro tipo de usuário, a tendência é adicionar uma nova classe criadora, sem precisar alterar o fluxo principal do cadastro.
 
 #### Classes principais do RF02
 
-- `UserCreator`, `ResearcherCreator`, `ReviewerCreator` e `CoordinatorCreator`: classes relacionadas à criação dos tipos de usuário.
-- `RegisterUserUseCase`: executa o fluxo de cadastro de usuário.
-- `FindUserByEmailUseCase`: busca um usuário cadastrado pelo e-mail.
-- `EnsureDefaultCoordinatorUseCase`: garante que exista um coordenador padrão para a simulação.
-- `UserPersistence` ou `UserGateway`: interface usada pelos casos de uso para persistência de usuários.
-- Implementação em memória: guarda os usuários cadastrados durante a execução.
+- `ResearcherFactory`, `CoordinatorFactory`: fábricas responsáveis pela criação dos usuários.
+- `RegisterUserUseCase`: executa o cadastro de um novo pesquisador.
+- `LoginUserUseCase`: autentica um usuário já cadastrado.
+- `UserGateway`: interface usada pelos casos de uso para persistência de usuários.
+- `InMemoryUserGateway`: implementação em memória, usada na versão atual do projeto.
 
 #### Coordenador padrão
 
-Para permitir a simulação dos requisitos RF03 e RF04, o sistema cria automaticamente um coordenador padrão caso ele ainda não exista no banco. Esse coordenador representa o usuário responsável por cadastrar áreas temáticas e formar o comitê técnico.
+Para permitir testar o sistema sem exigir um cadastro manual, o sistema cria automaticamente um coordenador padrão ao iniciar, caso ele ainda não exista.
 
 | Campo | Valor |
 |---|---|
-| Nome | Coordenador Geral |
 | E-mail | coordenador@paperflow.com |
 | Senha | admin123 |
-| Instituição | PaperFlow |
 | Tipo | Coordinator |
 
 ---
 
 ### 6.2 RF03 - Cadastro de áreas temáticas
 
-O RF03 permite que o coordenador cadastre as áreas temáticas do evento. Essas áreas continuam sendo palavras-chave, usadas posteriormente pelos autores na submissão dos artigos e pelos revisores na indicação de expertise.
-
-#### Padrão utilizado: Composite
-
-O **Composite** foi aplicado para organizar palavras-chave em uma árvore de grupos e subgrupos temáticos. Assim, o sistema consegue tratar uma área simples e uma área composta de forma uniforme.
-
-```text
-TopicComponent
- ├── Topic       → palavra-chave simples
- └── TopicGroup  → grupo de áreas e subáreas
-```
-
-Exemplo de organização temática:
-
-```text
-Inteligência Artificial
- ├── Machine Learning
- ├── Visão Computacional
- └── Processamento de Linguagem Natural
-      ├── LLMs
-      └── Mineração de Texto
-```
+O RF03 permite que o coordenador cadastre as áreas temáticas de um evento. Cada área é uma palavra-chave simples, usada posteriormente pelos autores ao submeter artigos (RF05) e pelos revisores para indicar suas expertises (RF04).
 
 #### Regras de negócio do RF03
 
-- Somente um coordenador cadastrado pode gerenciar áreas temáticas.
-- Um grupo de áreas deve possuir pelo menos uma palavra-chave.
-- Não deve haver palavras-chave duplicadas dentro da mesma árvore temática.
+- Somente o coordenador do evento pode cadastrar áreas temáticas.
+- As áreas cadastradas ficam vinculadas ao evento atual.
+- Um evento precisa ter ao menos uma área temática cadastrada antes de ser iniciado (ver RF01).
 
 #### Classes principais do RF03
 
-- `TopicComponent`: interface comum do Composite.
-- `Topic`: folha da árvore, representando uma palavra-chave.
-- `TopicGroup`: elemento composto, representando um grupo de áreas.
-- `CreateTopicTreeUseCase`: cadastra a árvore de áreas temáticas.
-- `ListTopicTreeUseCase`: lista as áreas temáticas cadastradas.
-- `TopicPersistence`: interface de persistência das áreas.
-- Implementação em memória: salva e reconstrói a árvore de áreas temáticas durante a execução.
-- `RF03TopicCompositeDemo`: simulação em console do RF03.
+- `ThematicArea`: entidade que representa uma área temática do evento.
+- `CreateThematicAreaUseCase`: cadastra uma nova área temática vinculada ao evento atual.
 
 ---
 
 ### 6.3 RF04 - Comitê técnico de avaliação
 
-O RF04 permite que o coordenador forme o comitê técnico do evento. O fluxo começa com o convite de um usuário já cadastrado. O convite inicia como `PENDING` e pode ser aceito ou rejeitado pelo usuário convidado.
+O RF04 permite que o coordenador monte o comitê técnico do evento, adicionando pesquisadores já cadastrados como revisores e associando a cada um suas áreas de expertise.
 
 ```text
-Coordenador convida usuário cadastrado
+Coordenador informa e-mail de um pesquisador cadastrado
         ↓
-Convite criado com status PENDING
+Informa as áreas de expertise do revisor
         ↓
-Usuário aceita ou rejeita
-        ↓
-Se aceitar, passa a atuar como Reviewer
-        ↓
-Reviewer informa áreas de expertise
-```
-
-#### Padrão GoF utilizado: Observer
-
-O **Observer** foi utilizado para notificar eventos internos do processo de convite do comitê técnico. A implementação não envia e-mail real, pois essa responsabilidade pertence aos requisitos de notificação/e-mail do projeto. Aqui, o objetivo é registrar e demonstrar eventos como convite criado, aceito ou rejeitado.
-
-```text
-CommitteeInvitationPublisher
-        ↓ notifica
-CommitteeInvitationObserver
-        ↓
-ConsoleCommitteeObserver
-CommitteeAuditTrailObserver
+Pesquisador é adicionado ao comitê do evento
 ```
 
 #### Regras de negócio do RF04
 
-- Somente coordenador pode convidar usuários para o comitê.
-- O usuário convidado precisa estar previamente cadastrado.
-- Não pode existir convite pendente duplicado para o mesmo usuário.
-- O convite só pode ser aceito ou rejeitado se estiver com status `PENDING`.
-- O convite só pode ser respondido pelo usuário convidado.
-- Para aceitar o convite, o usuário deve informar pelo menos uma área de expertise.
-- Ao aceitar o convite, o usuário passa a atuar como `Reviewer`.
+- O usuário a ser adicionado precisa já estar cadastrado no sistema (RF02).
+- É necessário informar ao menos uma área de expertise para o revisor.
+- As áreas de expertise informadas precisam estar entre as áreas temáticas já cadastradas no evento (RF03).
+- Um evento precisa ter ao menos um revisor no comitê antes de ser iniciado (ver RF01).
 
 #### Classes principais do RF04
 
-- `CommitteeInvitation`: entidade que representa o convite para o comitê técnico.
-- `InviteReviewerUseCase`: cria convite para um usuário cadastrado.
-- `AcceptCommitteeInvitationUseCase`: aceita convite e transforma o usuário em `Reviewer`.
-- `RejectCommitteeInvitationUseCase`: rejeita convite pendente.
-- `FindCommitteeInvitationByIdUseCase`: busca convite por identificador.
-- `FindPendingCommitteeInvitationByReviewerEmailUseCase`: localiza convite pendente por usuário convidado.
-- `ListCommitteeInvitationsUseCase`: lista os convites registrados.
-- `ListTechnicalCommitteeUseCase`: lista revisores aceitos no comitê.
-- `CommitteeInvitationPublisher` e `CommitteeInvitationObserver`: estrutura do Observer.
-- `ConsoleCommitteeObserver`: mostra eventos no console.
-- `CommitteeAuditTrailObserver`: mantém histórico interno dos eventos observados.
-- `CommitteePersistence`: interface de persistência do comitê.
-- Implementação em memória: salva convites e expertises dos revisores durante a execução.
-- `RF04CommitteeDemo`: simulação em console do RF04.
+- `AddReviewerUseCase`: adiciona um pesquisador cadastrado ao comitê técnico do evento, com suas áreas de expertise.
 
 ---
 
@@ -272,7 +262,10 @@ O evento nasce em preparação (`CreateEventUseCase`) e só passa a aceitar subm
 
 O RF05 trata do fluxo de submissão de um artigo científico e do seu ciclo de avaliação: submetido, em avaliação, aceito ou rejeitado. O artigo só pode ser submetido para um evento que já esteja iniciado (`isOpenForSubmission()`) e exige título, resumo e ao menos uma área temática.
 
-O ciclo de vida do artigo é representado pelo enum `PaperStatus`, que assume os valores `SUBMITTED`, `UNDER_REVIEW`, `ACCEPTED` e `REJECTED` conforme o andamento da avaliação.
+#### Padrão utilizado: State
+
+O **State** foi aplicado porque o artigo (`Paper`) muda de comportamento conforme seu estado muda, e cada estado permite (ou não) determinadas transições.
+
 
 #### Regras de negócio do RF05
 
@@ -282,8 +275,8 @@ O ciclo de vida do artigo é representado pelo enum `PaperStatus`, que assume os
 
 #### Classes principais do RF05
 
-- `Paper`: entidade que representa o artigo.
-- `PaperStatus`: enum com os estados possíveis do artigo.
+- `Paper`: entidade que representa o artigo (contexto do State).
+- Classes de estado do artigo (conferir nomes atuais no código).
 - `SubmitPaperUseCase`: executa a submissão de um novo artigo.
 - `ListAuthorPapersUseCase`: lista os artigos de um autor.
 - `ListEventPapersUseCase`: lista os artigos submetidos a um evento.
@@ -354,7 +347,7 @@ Os casos de uso foram mantidos focados nas regras de negócio. Validações de e
 
 ### Open/Closed Principle
 
-A estrutura permite extensão sem mudanças grandes no código existente. É possível adicionar novos criadores de usuário, novos componentes temáticos, novos observadores do comitê e novos filtros de artigo sem reescrever a lógica principal.
+A estrutura permite extensão sem mudanças grandes no código existente. É possível adicionar novas fábricas de usuário e novos filtros de artigo sem reescrever a lógica principal.
 
 ### Dependency Inversion Principle
 
@@ -366,7 +359,7 @@ Os casos de uso dependem de interfaces de gateway, como `UserGateway`, `TopicPer
 
 **Diagrama geral:** Inserir o diagrama de classes completo após a integração de todos os módulos.
 
-**Diagrama do módulo Usuários e Comitê:** Inserir diagrama com Factory Method, Composite e Observer destacados.
+**Diagrama do módulo Usuários e Comitê:** Inserir diagrama com Factory Method destacado.
 
 **Diagrama do módulo Início, Submissão e Dashboard:** Inserir diagrama com State e Chain of Responsibility destacados.
 
@@ -385,5 +378,5 @@ Os casos de uso dependem de interfaces de gateway, como `UserGateway`, `TopicPer
 - Integrar a documentação dos demais integrantes.
 - Avaliar a substituição da persistência em memória por um banco de dados, se necessário.
 - Adicionar diagrama de classes com os padrões destacados.
-- Adicionar tutorial final de execução após a revisão de todas as telas.
+- Adicionar tutorial final de execução após a revisão completa do fluxo do sistema.
 - Revisar o `README.md` final para deixar a entrega clara e objetiva.
