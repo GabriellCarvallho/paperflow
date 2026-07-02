@@ -1,7 +1,5 @@
 package com.system.paperflow.application.usecase.committee;
 
-import com.system.paperflow.application.exception.CommitteeInvitationNotFoundException;
-import com.system.paperflow.application.exception.InvalidCommitteeInvitationException;
 import com.system.paperflow.application.observer.committee.CommitteeInvitationEvent;
 import com.system.paperflow.application.observer.committee.CommitteeInvitationEventType;
 import com.system.paperflow.application.observer.committee.CommitteeInvitationPublisher;
@@ -12,6 +10,7 @@ public class RejectCommitteeInvitationUseCase {
 
     private final CommitteePersistence committeePersistence;
     private final CommitteeInvitationPublisher publisher;
+    private final FindCommitteeInvitationByIdUseCase findInvitationByIdUseCase;
 
     public RejectCommitteeInvitationUseCase(
             CommitteePersistence committeePersistence,
@@ -19,33 +18,17 @@ public class RejectCommitteeInvitationUseCase {
     ) {
         this.committeePersistence = committeePersistence;
         this.publisher = publisher;
+        this.findInvitationByIdUseCase = new FindCommitteeInvitationByIdUseCase(committeePersistence);
     }
 
     public CommitteeInvitation execute(String invitationId, String reviewerEmail) {
-        CommitteeInvitation invitation = committeePersistence.findInvitationById(invitationId)
-                .orElseThrow(() -> new CommitteeInvitationNotFoundException("Convite nao encontrado."));
+        CommitteeInvitation invitation = findInvitationByIdUseCase.execute(invitationId);
 
-        validateInvitationOwner(invitation, reviewerEmail);
-
-        invitation.reject();
+        invitation.rejectBy(reviewerEmail);
         committeePersistence.updateInvitationStatus(invitation);
         notifyRejected(invitation);
 
         return invitation;
-    }
-
-    private void validateInvitationOwner(CommitteeInvitation invitation, String reviewerEmail) {
-        if (!invitation.getReviewerEmail().equalsIgnoreCase(reviewerEmail)) {
-            throw new InvalidCommitteeInvitationException(
-                    "Este convite pertence a outro usuario."
-            );
-        }
-
-        if (!invitation.isPending()) {
-            throw new InvalidCommitteeInvitationException(
-                    "Apenas convites pendentes podem ser rejeitados."
-            );
-        }
     }
 
     private void notifyRejected(CommitteeInvitation invitation) {

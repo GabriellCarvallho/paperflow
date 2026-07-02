@@ -3,8 +3,11 @@ package com.system.paperflow.infrastructure.sqlite;
 import com.system.paperflow.application.exception.CommitteePersistenceException;
 import com.system.paperflow.application.persistence.CommitteePersistence;
 import com.system.paperflow.domain.entity.CommitteeInvitation;
+import com.system.paperflow.domain.entity.Coordinator;
+import com.system.paperflow.domain.entity.Researcher;
 import com.system.paperflow.domain.entity.Reviewer;
 import com.system.paperflow.domain.entity.Topic;
+import com.system.paperflow.domain.entity.User;
 import com.system.paperflow.domain.enums.InvitationStatus;
 
 import java.nio.file.Files;
@@ -17,20 +20,21 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public class SQLiteCommitteeAdapter implements CommitteePersistence {
+public class SQLiteCommittee implements CommitteePersistence {
 
     private final String databaseUrl;
 
-    public SQLiteCommitteeAdapter(String databasePath) {
+    public SQLiteCommittee(String databasePath) {
         this(Path.of(databasePath));
     }
 
-    public SQLiteCommitteeAdapter(Path databasePath) {
+    public SQLiteCommittee(Path databasePath) {
         loadSQLiteDriver();
         createParentDirectoryIfNecessary(databasePath);
         this.databaseUrl = "jdbc:sqlite:" + databasePath.toAbsolutePath().normalize();
@@ -68,12 +72,7 @@ public class SQLiteCommitteeAdapter implements CommitteePersistence {
 
     @Override
     public Optional<CommitteeInvitation> findInvitationById(String invitationId) {
-        String sql = """
-                SELECT id, coordinator_email, reviewer_email, status, created_at, answered_at
-                FROM committee_invitations
-                WHERE id = ?
-                LIMIT 1
-                """;
+        String sql = invitationSelectSql() + " WHERE i.id = ? LIMIT 1";
 
         try (Connection connection = connect();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -94,12 +93,7 @@ public class SQLiteCommitteeAdapter implements CommitteePersistence {
 
     @Override
     public Optional<CommitteeInvitation> findPendingInvitationByReviewerEmail(String reviewerEmail) {
-        String sql = """
-                SELECT id, coordinator_email, reviewer_email, status, created_at, answered_at
-                FROM committee_invitations
-                WHERE reviewer_email = ? AND status = ?
-                LIMIT 1
-                """;
+        String sql = invitationSelectSql() + " WHERE i.reviewer_email = ? AND i.status = ? LIMIT 1";
 
         try (Connection connection = connect();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -179,11 +173,7 @@ public class SQLiteCommitteeAdapter implements CommitteePersistence {
 
     @Override
     public List<CommitteeInvitation> findAllInvitations() {
-        String sql = """
-                SELECT id, coordinator_email, reviewer_email, status, created_at, answered_at
-                FROM committee_invitations
-                ORDER BY created_at
-                """;
+        String sql = invitationSelectSql() + " ORDER BY i.created_at";
 
         try (Connection connection = connect();
              PreparedStatement statement = connection.prepareStatement(sql);
@@ -279,15 +269,62 @@ public class SQLiteCommitteeAdapter implements CommitteePersistence {
         statement.setString(6, formatDate(invitation.getAnsweredAt()));
     }
 
+    private String invitationSelectSql() {
+        return """
+                SELECT
+                    i.id,
+                    i.coordinator_email,
+                    i.reviewer_email,
+                    i.status,
+                    i.created_at,
+                    i.answered_at,
+                    coordinator.username AS coordinator_username,
+                    coordinator.email AS coordinator_user_email,
+                    coordinator.password AS coordinator_password,
+                    coordinator.institution AS coordinator_institution,
+                    invited.username AS invited_username,
+                    invited.email AS invited_user_email,
+                    invited.password AS invited_password,
+                    invited.institution AS invited_institution,
+                    invited.role AS invited_role
+                FROM committee_invitations i
+                INNER JOIN users coordinator ON coordinator.email = i.coordinator_email
+                INNER JOIN users invited ON invited.email = i.reviewer_email
+                """;
+    }
+
     private CommitteeInvitation mapInvitation(ResultSet resultSet) throws SQLException {
+        Coordinator coordinator = new Coordinator(
+                resultSet.getString("coordinator_username"),
+                resultSet.getString("coordinator_user_email"),
+                resultSet.getString("coordinator_password"),
+                resultSet.getString("coordinator_institution")
+        );
+
+        User invitedUser = mapInvitedUser(resultSet);
+
         return new CommitteeInvitation(
                 resultSet.getString("id"),
-                resultSet.getString("coordinator_email"),
-                resultSet.getString("reviewer_email"),
+                coordinator,
+                invitedUser,
                 InvitationStatus.valueOf(resultSet.getString("status")),
                 parseDate(resultSet.getString("created_at")),
                 parseDate(resultSet.getString("answered_at"))
         );
+    }
+
+    private User mapInvitedUser(ResultSet resultSet) throws SQLException {
+        String username = resultSet.getString("invited_username");
+        String email = resultSet.getString("invited_user_email");
+        String password = resultSet.getString("invited_password");
+        String institution = resultSet.getString("invited_institution");
+        String role = resultSet.getString("invited_role");
+
+        return switch (role) {
+            case "REVIEWER" -> new Reviewer(username, email, password, institution, Collections.emptySet());
+            case "COORDINATOR" -> new Coordinator(username, email, password, institution);
+            default -> new Researcher(username, email, password, institution);
+        };
     }
 
     private void loadSQLiteDriver() {

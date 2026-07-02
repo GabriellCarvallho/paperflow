@@ -18,18 +18,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class SQLiteTopicAdapter implements TopicPersistence {
+public class SQLiteTopic implements TopicPersistence {
 
     private static final String TYPE_TOPIC = "TOPIC";
     private static final String TYPE_GROUP = "GROUP";
 
     private final String databaseUrl;
 
-    public SQLiteTopicAdapter(String databasePath) {
+    public SQLiteTopic(String databasePath) {
         this(Path.of(databasePath));
     }
 
-    public SQLiteTopicAdapter(Path databasePath) {
+    public SQLiteTopic(Path databasePath) {
         loadSQLiteDriver();
         createParentDirectoryIfNecessary(databasePath);
         this.databaseUrl = "jdbc:sqlite:" + databasePath.toAbsolutePath().normalize();

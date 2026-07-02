@@ -6,6 +6,8 @@ public interface Screen extends View {
 
     String withTitle();
 
-    Dimension withDimension();
+    default Dimension initialSize() {
+        return new Dimension(1280, 720);
+    }
     
 }

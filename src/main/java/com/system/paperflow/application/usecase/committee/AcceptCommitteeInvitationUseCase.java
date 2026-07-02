@@ -1,12 +1,11 @@
 package com.system.paperflow.application.usecase.committee;
 
-import com.system.paperflow.application.exception.CommitteeInvitationNotFoundException;
 import com.system.paperflow.application.exception.InvalidCommitteeInvitationException;
+import com.system.paperflow.application.factory.ReviewerCreator;
 import com.system.paperflow.application.observer.committee.CommitteeInvitationEvent;
 import com.system.paperflow.application.observer.committee.CommitteeInvitationEventType;
 import com.system.paperflow.application.observer.committee.CommitteeInvitationPublisher;
 import com.system.paperflow.application.persistence.CommitteePersistence;
-import com.system.paperflow.application.persistence.UserPersistence;
 import com.system.paperflow.domain.entity.CommitteeInvitation;
 import com.system.paperflow.domain.entity.Reviewer;
 import com.system.paperflow.domain.entity.Topic;
@@ -16,39 +15,30 @@ import java.util.Set;
 
 public class AcceptCommitteeInvitationUseCase {
 
-    private final UserPersistence userPersistence;
     private final CommitteePersistence committeePersistence;
     private final CommitteeInvitationPublisher publisher;
+    private final FindCommitteeInvitationByIdUseCase findInvitationByIdUseCase;
+    private final ReviewerCreator reviewerCreator;
 
     public AcceptCommitteeInvitationUseCase(
-            UserPersistence userPersistence,
             CommitteePersistence committeePersistence,
             CommitteeInvitationPublisher publisher
     ) {
-        this.userPersistence = userPersistence;
         this.committeePersistence = committeePersistence;
         this.publisher = publisher;
+        this.findInvitationByIdUseCase = new FindCommitteeInvitationByIdUseCase(committeePersistence);
+        this.reviewerCreator = new ReviewerCreator();
     }
 
     public Reviewer execute(String invitationId, String reviewerEmail, Set<Topic> expertiseAreas) {
-        CommitteeInvitation invitation = committeePersistence.findInvitationById(invitationId)
-                .orElseThrow(() -> new CommitteeInvitationNotFoundException("Convite nao encontrado."));
+        CommitteeInvitation invitation = findInvitationByIdUseCase.execute(invitationId);
 
-        validateInvitationOwner(invitation, reviewerEmail);
         validateExpertiseAreas(expertiseAreas);
+        invitation.acceptBy(reviewerEmail);
 
-        User user = userPersistence.findByEmail(reviewerEmail)
-                .orElseThrow(() -> new InvalidCommitteeInvitationException(
-                        "O usuario convidado nao foi encontrado no cadastro."
-                ));
-
-        invitation.accept();
-
-        Reviewer reviewer = new Reviewer(
-                user.getUsername(),
-                user.getEmail(),
-                user.getPassword(),
-                user.getInstitution(),
+        User invitedUser = invitation.getInvitedUser();
+        Reviewer reviewer = reviewerCreator.createFromUser(
+                invitation.getInvitedUser(),
                 expertiseAreas
         );
 
@@ -57,20 +47,6 @@ public class AcceptCommitteeInvitationUseCase {
         notifyAccepted(invitation);
 
         return reviewer;
-    }
-
-    private void validateInvitationOwner(CommitteeInvitation invitation, String reviewerEmail) {
-        if (!invitation.getReviewerEmail().equalsIgnoreCase(reviewerEmail)) {
-            throw new InvalidCommitteeInvitationException(
-                    "Este convite pertence a outro usuario."
-            );
-        }
-
-        if (!invitation.isPending()) {
-            throw new InvalidCommitteeInvitationException(
-                    "Apenas convites pendentes podem ser aceitos."
-            );
-        }
     }
 
     private void validateExpertiseAreas(Set<Topic> expertiseAreas) {
