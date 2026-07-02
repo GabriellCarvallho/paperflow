@@ -49,17 +49,21 @@ public class Card implements View {
     public Card children(View... components) {
         this.panel.removeAll();
 
-        for (int index = 0; index < components.length; index++) {
-            View component = components[index];
-            JComponent child = component.build();
-            child.setAlignmentX(Component.LEFT_ALIGNMENT);
-            this.panel.add(child);
-
-            if (gap > 0 && index < components.length - 1) {
-                this.panel.add(Spacer.vertical(gap).build());
-            }
+        for (View component : components) {
+            add(component);
         }
 
+        return this;
+    }
+
+    public Card add(View component) {
+        if (gap > 0 && this.panel.getComponentCount() > 0) {
+            this.panel.add(Spacer.vertical(gap).build());
+        }
+
+        JComponent child = component.build();
+        child.setAlignmentX(Component.LEFT_ALIGNMENT);
+        this.panel.add(child);
         return this;
     }
 

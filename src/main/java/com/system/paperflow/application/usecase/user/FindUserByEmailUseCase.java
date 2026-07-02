@@ -1,23 +1,22 @@
 package com.system.paperflow.application.usecase.user;
 
-import com.system.paperflow.application.exception.InvalidCommitteeInvitationException;
-import com.system.paperflow.application.persistence.UserPersistence;
+import com.system.paperflow.application.gateway.UserGateway;
+import com.system.paperflow.commons.StringUtils;
 import com.system.paperflow.domain.entity.Researcher;
 
 public class FindUserByEmailUseCase {
 
-    private final UserPersistence userPersistence;
+    private final UserGateway userGateway;
 
-    public FindUserByEmailUseCase(UserPersistence userPersistence) {
-        this.userPersistence = userPersistence;
+    public FindUserByEmailUseCase(UserGateway userGateway) {
+        this.userGateway = userGateway;
     }
 
     public Researcher execute(String email) {
-        String normalizedEmail = email.trim().toLowerCase();
 
-        return userPersistence.findByEmail(normalizedEmail)
-                .orElseThrow(() -> new InvalidCommitteeInvitationException(
-                        "Usuario nao encontrado no cadastro: " + normalizedEmail
+        return userGateway.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException(
+                        "Usuario nao encontrado no cadastro: " + email
                 ));
     }
 }

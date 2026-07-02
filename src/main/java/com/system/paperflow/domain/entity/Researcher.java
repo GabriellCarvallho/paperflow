@@ -1,9 +1,6 @@
 package com.system.paperflow.domain.entity;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class Researcher {
 
@@ -13,6 +10,7 @@ public class Researcher {
     private String institution;
 
     private final Set<Profile> profiles;
+    private final Set<ThematicArea> areas;
 
     public Researcher(String username, String email, String password, String institution) {
         this.email = email;
@@ -20,7 +18,7 @@ public class Researcher {
         this.password = password;
         this.institution = institution;
         this.profiles = new HashSet<>();
-        
+        this.areas = new  HashSet<>();
     }
 
     public void addProfile(Profile profile) {
@@ -44,14 +42,6 @@ public class Researcher {
         return hasProfile(CoordinatorProfile.class);
     }
 
-    public boolean isReviewer() {
-        return hasProfile(ReviewerProfile.class);
-    }
-
-    public Set<Profile> getProfiles() {
-        return Collections.unmodifiableSet(profiles);
-    }
-
     public String getUsername() {
         return username;
     }
@@ -68,4 +58,23 @@ public class Researcher {
         return institution;
     }
 
+    public void addThematicArea(ThematicArea area) {
+        areas.add(area);
+    }
+
+    public Set<ThematicArea> getAreas() {
+        return areas;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Researcher that)) return false;
+        return Objects.equals(email, that.email);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(email);
+    }
 }

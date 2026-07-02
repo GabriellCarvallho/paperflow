@@ -1,58 +1,32 @@
 package com.system.paperflow.domain.entity;
 
-import com.system.paperflow.domain.state.PaperState;
-import com.system.paperflow.domain.state.SubmittedState;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Paper {
 
-    private String id;
+    private UUID id;
     private String title;
     private String summary;
     private Researcher author;
     private List<Researcher> collaborators;
-    private Set<Topic> topics;
+    private Set<ThematicArea> areas;
     private Event event;
-    private PaperState state;
 
-    public Paper(String id, String title, String summary, Researcher author,
-                 List<Researcher> collaborators, Set<Topic> topics, Event event) {
-        this.id = id;
+    public Paper(String title, String summary, Researcher author, Event event) {
+        this.id = UUID.randomUUID();
         this.title = title;
         this.summary = summary;
         this.author = author;
-        this.collaborators = collaborators;
-        this.topics = topics;
         this.event = event;
-        this.state = new SubmittedState();
+        this.collaborators = new ArrayList<>();
+        this.areas = new HashSet<>();
     }
 
-    public void advanceState() {
-        state.advance(this);
-    }
+    public void addThematicArea(ThematicArea area) {
 
-    public void setState(PaperState state) {
-        this.state = state;
-    }
+        if (!event.getThematicAreas().contains(area)) throw new IllegalArgumentException("A área temática não pertence ao evento.");
 
-    public PaperState getState() {
-        return state;
-    }
-
-    public String getStatus() {
-        return state.getStatus();
-    }
-    public String getId() {
-        return id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getSummary() {
-        return summary;
+        areas.add(area);
     }
 
     public Researcher getAuthor() {
@@ -63,11 +37,11 @@ public class Paper {
         return collaborators;
     }
 
-    public Set<Topic> getTopics() {
-        return topics;
+    public Set<ThematicArea> getAreas() {
+        return areas;
     }
 
-    public Event getEvent() {
-        return event;
+    public UUID getId() {
+        return id;
     }
 }

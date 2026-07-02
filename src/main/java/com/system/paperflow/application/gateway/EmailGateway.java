@@ -1,6 +1,6 @@
 package com.system.paperflow.application.gateway;
 
-import com.system.paperflow.domain.email.EmailMessage;
+import com.system.paperflow.domain.entity.EmailMessage;
 
 public interface EmailGateway {
     

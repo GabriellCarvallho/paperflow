@@ -1,30 +1,29 @@
 package com.system.paperflow.application.usecase.user;
 
-import com.system.paperflow.application.exception.UserAlreadyExistsException;
-import com.system.paperflow.application.factory.ResearcherCreator;
-import com.system.paperflow.application.persistence.UserPersistence;
+import com.system.paperflow.application.factory.ResearcherFactory;
+import com.system.paperflow.application.gateway.UserGateway;
+import com.system.paperflow.commons.StringUtils;
 import com.system.paperflow.domain.entity.Researcher;
 
 public class RegisterUserUseCase {
 
-    private final UserPersistence userPersistence;
-    private final ResearcherCreator researcherCreator;
+    private final UserGateway userGateway;
+    private final ResearcherFactory researcherFactory;
 
-    public RegisterUserUseCase(UserPersistence userPersistence, ResearcherCreator researcherCreator) {
-        this.userPersistence = userPersistence;
-        this.researcherCreator = researcherCreator;
+    public RegisterUserUseCase(UserGateway userGateway, ResearcherFactory researcherFactory) {
+        this.userGateway = userGateway;
+        this.researcherFactory = researcherFactory;
     }
 
     public Researcher execute(String email, String password, String institution) {
-        String normalizedEmail = email.trim().toLowerCase();
 
-        if (userPersistence.existsByEmail(normalizedEmail)) {
-            throw new UserAlreadyExistsException(normalizedEmail);
+        if (userGateway.existsByEmail(email)) {
+            throw new RuntimeException("Usuario ja cadastrado com o email: " + email);
         }
 
-        String username = createUsernameFromEmail(normalizedEmail);
-        Researcher researcher = researcherCreator.create(username, normalizedEmail, password, institution.trim());
-        userPersistence.save(researcher);
+        String username = createUsernameFromEmail(email);
+        Researcher researcher = researcherFactory.create(username, email, password, institution);
+        userGateway.save(researcher);
 
         return researcher;
     }

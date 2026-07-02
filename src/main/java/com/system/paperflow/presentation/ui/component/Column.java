@@ -78,22 +78,26 @@ public class Column implements View {
     public Column children(View... components) {
         this.panel.removeAll();
 
-        for (int index = 0; index < components.length; index++) {
-            View component = components[index];
-            JComponent jComp = component.build();
-            
-            switch (alignment) {
-                case LEFT -> jComp.setAlignmentX(Component.LEFT_ALIGNMENT);
-                case CENTER -> jComp.setAlignmentX(Component.CENTER_ALIGNMENT);
-                case RIGHT -> jComp.setAlignmentX(Component.RIGHT_ALIGNMENT);
-            }
-
-            this.panel.add(jComp);
-
-            if (gap > 0 && index < components.length - 1) {
-                this.panel.add(Spacer.vertical(gap).build());
-            }
+        for (View component : components) {
+            add(component);
         }
+        return this;
+    }
+
+    public Column add(View component) {
+        if (gap > 0 && this.panel.getComponentCount() > 0) {
+            this.panel.add(Spacer.vertical(gap).build());
+        }
+
+        JComponent jComp = component.build();
+
+        switch (alignment) {
+            case LEFT -> jComp.setAlignmentX(Component.LEFT_ALIGNMENT);
+            case CENTER -> jComp.setAlignmentX(Component.CENTER_ALIGNMENT);
+            case RIGHT -> jComp.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        }
+
+        this.panel.add(jComp);
         return this;
     }
 

@@ -3,7 +3,7 @@ package com.system.paperflow.infrastructure.gateway;
 import java.util.Properties;
 
 import com.system.paperflow.application.gateway.EmailGateway;
-import com.system.paperflow.domain.email.EmailMessage;
+import com.system.paperflow.domain.entity.EmailMessage;
 
 import jakarta.mail.Authenticator;
 import jakarta.mail.Message;

@@ -1,23 +1,21 @@
 package com.system.paperflow.application.usecase.user;
 
-import com.system.paperflow.application.exception.InvalidCredentialsException;
-import com.system.paperflow.application.exception.UserPersistenceException;
-import com.system.paperflow.application.persistence.UserPersistence;
+import com.system.paperflow.application.gateway.UserGateway;
+import com.system.paperflow.commons.StringUtils;
 import com.system.paperflow.domain.entity.Researcher;
 
 public class LoginUserUseCase {
 
-    private final UserPersistence userPersistence;
+    private final UserGateway userGateway;
 
-    public LoginUserUseCase(UserPersistence userPersistence) {
-        this.userPersistence = userPersistence;
+    public LoginUserUseCase(UserGateway userGateway) {
+        this.userGateway = userGateway;
     }
 
     public Researcher execute(String email, String password) {
-        String normalizedEmail = email.trim().toLowerCase();
-        Researcher researcher = userPersistence.findByEmail(normalizedEmail).orElseThrow(() -> new UserPersistenceException("Usuario não encontrado"));
+        Researcher researcher = userGateway.findByEmail(email).orElseThrow(() -> new RuntimeException("Usuario não encontrado"));
 
-        if (!researcher.getPassword().equals(password)) throw new InvalidCredentialsException();
+        if (!researcher.getPassword().equals(password)) throw new RuntimeException("Credenciais invalidas");
 
         return researcher;
     }

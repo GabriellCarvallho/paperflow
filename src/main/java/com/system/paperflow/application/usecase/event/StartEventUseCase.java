@@ -1,12 +1,18 @@
 package com.system.paperflow.application.usecase.event;
 
-import com.system.paperflow.domain.entity.Event;
-import java.time.LocalDate;
+import com.system.paperflow.application.event.EventManager;
+
+import java.util.UUID;
 
 public class StartEventUseCase {
 
-    public Event execute(String name, String city, LocalDate startDate,
-                         LocalDate endDate, LocalDate submissionDeadline) {
-        return new Event(name, city, startDate, endDate, submissionDeadline);
+    private final EventManager eventManager;
+
+    public StartEventUseCase(EventManager eventManager) {
+        this.eventManager = eventManager;
+    }
+
+    public void execute(UUID eventId) {
+
     }
 }

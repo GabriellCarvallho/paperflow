@@ -3,11 +3,14 @@ package com.system.paperflow.presentation.ui.component;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.text.ParseException;
 
 import javax.swing.BorderFactory;
+import javax.swing.JFormattedTextField;
 import javax.swing.JComponent;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.text.MaskFormatter;
 
 import com.system.paperflow.presentation.ui.Theme;
 import com.system.paperflow.presentation.ui.View;
@@ -15,7 +18,7 @@ import com.system.paperflow.presentation.ui.View;
 public class TextField implements View {
 
     public enum TextFieldType {
-        TEXT, PASSWORD;
+        TEXT, PASSWORD, DATE;
     }
 
     private final JTextField textField;
@@ -77,7 +80,11 @@ public class TextField implements View {
     }
 
     public static TextField create(TextFieldType type) {
-        return (type == TextFieldType.PASSWORD) ? new TextField(new JPasswordField()) : new TextField(new JTextField());
+        return switch (type) {
+            case PASSWORD -> new TextField(new JPasswordField());
+            case DATE -> new TextField(dateField());
+            default -> new TextField(new JTextField());
+        };
     }
 
     @Override
@@ -94,5 +101,15 @@ public class TextField implements View {
         this.textField.setPreferredSize(size);
         this.textField.setMinimumSize(size);
         this.textField.setMaximumSize(size);
+    }
+
+    private static JFormattedTextField dateField() {
+        try {
+            MaskFormatter formatter = new MaskFormatter("##/##/####");
+            formatter.setPlaceholderCharacter('_');
+            return new JFormattedTextField(formatter);
+        } catch (ParseException exception) {
+            throw new IllegalStateException("Nao foi possivel configurar o campo de data.", exception);
+        }
     }
 }

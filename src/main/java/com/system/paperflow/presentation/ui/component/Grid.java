@@ -17,6 +17,7 @@ public class Grid implements View {
         this.columns = columns;
         this.panel = new JPanel();
         this.panel.setBackground(Theme.Colors.BACKGROUND);
+        this.panel.setLayout(new GridLayout(0, columns, Theme.Layout.GRID_GAP, Theme.Layout.GRID_GAP));
     }
 
     public static Grid columns(int columns) {
@@ -25,12 +26,16 @@ public class Grid implements View {
 
     public Grid children(View... components) {
         this.panel.removeAll();
-        this.panel.setLayout(new GridLayout(0, columns, Theme.Layout.GRID_GAP, Theme.Layout.GRID_GAP));
 
         for (View component : components) {
-            this.panel.add(component.build());
+            add(component);
         }
 
+        return this;
+    }
+
+    public Grid add(View component) {
+        this.panel.add(component.build());
         return this;
     }
 

@@ -10,14 +10,17 @@ import com.system.paperflow.presentation.ui.View;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class Row implements View {
 
     private final JPanel panel;
-    private View[] childComponents = new View[0];
+    private final List<View> childComponents = new ArrayList<>();
     private Alignment alignment = Alignment.LEFT;
     private int gap = 0;
+    private boolean spaceBetween = false;
 
     private Row() {
         this.panel = new JPanel();
@@ -51,6 +54,11 @@ public class Row implements View {
         return this;
     }
 
+    public Row spaceBetween() {
+        this.spaceBetween = true;
+        return this;
+    }
+
     public Row unsafeModifier(Consumer<JPanel> modifier) {
         modifier.accept(this.panel);
         return this;
@@ -68,7 +76,17 @@ public class Row implements View {
     }
 
     public Row children(View... components) {
-        this.childComponents = components;
+        this.childComponents.clear();
+
+        for (View component : components) {
+            add(component);
+        }
+
+        return this;
+    }
+
+    public Row add(View component) {
+        this.childComponents.add(component);
         return this;
     }
 
@@ -80,18 +98,27 @@ public class Row implements View {
             this.panel.add(Box.createHorizontalGlue());
         }
 
-        for (int index = 0; index < childComponents.length; index++) {
-            View component = childComponents[index];
+        for (int index = 0; index < childComponents.size(); index++) {
+            View component = childComponents.get(index);
             JComponent jComp = component.build();
             jComp.setAlignmentY(Component.CENTER_ALIGNMENT); 
+
+            if (spaceBetween) {
+                jComp.setMaximumSize(jComp.getPreferredSize());
+            }
+
             this.panel.add(jComp);
 
-            if (gap > 0 && index < childComponents.length - 1) {
+            if (gap > 0 && index < childComponents.size() - 1) {
                 this.panel.add(Spacer.horizontal(gap).build());
+            }
+
+            if (spaceBetween && gap == 0 && index < childComponents.size() - 1) {
+                this.panel.add(Box.createHorizontalGlue());
             }
         }
 
-        if (alignment == Alignment.CENTER || alignment == Alignment.LEFT) {
+        if (!spaceBetween && (alignment == Alignment.CENTER || alignment == Alignment.LEFT)) {
             this.panel.add(Box.createHorizontalGlue());
         }
 

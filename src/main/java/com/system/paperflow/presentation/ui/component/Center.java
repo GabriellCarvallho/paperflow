@@ -1,6 +1,7 @@
 package com.system.paperflow.presentation.ui.component;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridBagLayout;
 
 import javax.swing.BorderFactory;
@@ -38,6 +39,13 @@ public class Center implements View {
 
     public Center withPadding(int padding) {
         this.panel.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
+        return this;
+    }
+
+    public Center withMinHeight(int height) {
+        Dimension preferredSize = this.panel.getPreferredSize();
+        this.panel.setPreferredSize(new Dimension(preferredSize.width, height));
+        this.panel.setMinimumSize(new Dimension(preferredSize.width, height));
         return this;
     }
 
